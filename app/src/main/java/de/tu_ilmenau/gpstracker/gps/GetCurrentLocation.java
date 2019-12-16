@@ -102,12 +102,14 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                         timeoutVal = Integer.parseInt(timeoutStr);
                     }
                     startService(timeoutVal);
-                   /* locationListener = new MyLocationListener();
-                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                            timeoutVal * 1000, 0.5f, locationListener);*/
                 }
+
             }
         });
+
+          locationListener = new MyLocationListener();
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                            2 * 1000, 0.5f, locationListener);
         timeout = (EditText) findViewById(R.id.timeout);
     }
 
@@ -191,9 +193,9 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     /*----------Method to create an AlertBox ------------- */
     protected void alertbox(String title, String mymessage) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Your Device's GPS is Disable")
+        builder.setMessage(mymessage)
                 .setCancelable(false)
-                .setTitle("** Gps Status **")
+                .setTitle(title)
                 .setPositiveButton("Gps On",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
@@ -220,7 +222,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     private class MyLocationListener implements LocationListener {
         @Override
         public void onLocationChanged(Location loc) {
-            xLocation.setText("");
+           /* xLocation.setText("");
             yLocation.setText("");
 //            pb.setVisibility(View.INVISIBLE);
             Toast.makeText(getBaseContext(), "Location changed : Lat: " +
@@ -232,7 +234,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
             Log.v(TAG, latitude);
             String s = longitude + "\n" + latitude;
             xLocation.setText(latitude);
-            yLocation.setText(longitude);
+            yLocation.setText(longitude);*/
         }
 
         @Override
