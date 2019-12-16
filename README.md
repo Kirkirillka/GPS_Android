@@ -19,5 +19,5 @@ The app allows sending device location to the 'MessageBroker' component using MQ
 ## How to use
 1. clone the repository
 2. import to Android Studio
-3. establish connection MQTT brocker
-4. launch on virtual or wirely connected device
+3. establish connection MQTT broker
+4. launch on virtual or a real device, they must be connected over wifi network.
