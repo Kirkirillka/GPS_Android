@@ -2,12 +2,11 @@ package de.tu_ilmenau.gpstracker.dbModel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.xml.datatype.XMLGregorianCalendar;
 
 public class ClientDeviceMessage extends Coordinate {
 
     @JsonProperty(ClientDeviceMessageFields.TIME)
-    private XMLGregorianCalendar time;
+    private long time;
 
     private ClientDeviceMessage(Builder builder) {
         setLongitude(builder.longitude);
@@ -97,11 +96,11 @@ public class ClientDeviceMessage extends Coordinate {
     }
 
 
-    public XMLGregorianCalendar getTime() {
+    public long getTime() {
         return time;
     }
 
-    public void setTime(XMLGregorianCalendar time) {
+    public void setTime(long time) {
         this.time = time;
     }
 
@@ -132,7 +131,7 @@ public class ClientDeviceMessage extends Coordinate {
     public static final class Builder {
         private double longitude;
         private double latitude;
-        private XMLGregorianCalendar time;
+        private long time;
         private MessageType messageType;
         private Device device;
         private Block payload;
@@ -150,7 +149,7 @@ public class ClientDeviceMessage extends Coordinate {
             return this;
         }
 
-        public Builder time(XMLGregorianCalendar val) {
+        public Builder time(long val) {
             time = val;
             return this;
         }

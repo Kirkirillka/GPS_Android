@@ -12,8 +12,12 @@ import android.content.pm.ActivityInfo;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -25,12 +29,14 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import de.tu_ilmenau.gpstracker.R;
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientService;
@@ -39,6 +45,7 @@ import de.tu_ilmenau.gpstracker.mqtt.MqttClientWrapper;
 public class GetCurrentLocation extends Activity implements OnClickListener {
 
     public static final String SERVICE_CLASSNAME = MqttClientService.class.getName();
+    private static final String TEST_IMG = "http://icons.iconarchive.com/icons/danleech/simple/128/android-icon.png";
 
     private LocationManager locationManager = null;
     private LocationListener locationListener = null;
@@ -98,18 +105,22 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                 }
                 if (isChecked) {
                     String timeoutStr = timeout.getText().toString();
-                    if (!timeoutStr.isEmpty()) {
-                        timeoutVal = Integer.parseInt(timeoutStr);
+                    try {
+                        if (!timeoutStr.isEmpty()) {
+                            timeoutVal = Integer.parseInt(timeoutStr);
+                        }
+                        startService(timeoutVal);
+                    } catch (Exception e) {
+                        alertbox("Incorrect timeout", "Timeout should be integer value");
                     }
-                    startService(timeoutVal);
                 }
 
             }
         });
 
-          locationListener = new MyLocationListener();
-                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                            2 * 1000, 0.5f, locationListener);
+        locationListener = new MyLocationListener();
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                2 * 1000, 0.5f, locationListener);
         timeout = (EditText) findViewById(R.id.timeout);
     }
 
@@ -163,6 +174,18 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                     alertbox("Network error", "Network connection is off");
                     return;
                 }
+                TextView speed = findViewById(R.id.speed);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                    NetworkInfo netInfo = cm.getActiveNetworkInfo();
+                    //should check null because in airplane mode it will be null
+                    NetworkCapabilities nc = cm.getNetworkCapabilities(cm.getActiveNetwork());
+                    int downSpeed = nc.getLinkDownstreamBandwidthKbps();
+                    int upSpeed = nc.getLinkUpstreamBandwidthKbps();
+                    speed.setText(String.format("Download speed: %s Mps", downSpeed / 1024.0));
+                } else {
+                    speedTest();
+                }
                 clientWrapper.publish(MessgeBuilder.buildMessage(loc, wifiInfo, deviceId));
                 xLocation.setText(loc.getLatitude() + "");
                 yLocation.setText(loc.getLongitude() + "");
@@ -174,6 +197,11 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         }
     }
 
+
+    private void speedTest() {
+        //Download your image
+        new AsyncCaller().execute();
+    }
 
     /*----Method to Check GPS is enable or disable ----- */
     private Boolean displayGpsStatus() {
@@ -196,14 +224,14 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         builder.setMessage(mymessage)
                 .setCancelable(false)
                 .setTitle(title)
-                .setPositiveButton("Gps On",
+                .setPositiveButton("Ok",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 // finish the current activity
                                 // AlertBoxAdvance.this.finish();
-                                Intent myIntent = new Intent(
+                                /*Intent myIntent = new Intent(
                                         Settings.ACTION_SECURITY_SETTINGS);
-                                startActivity(myIntent);
+                                startActivity(myIntent);*/
                                 dialog.cancel();
                             }
                         })
@@ -281,5 +309,42 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
             }
         }
         return false;
+    }
+
+
+    private class AsyncCaller extends AsyncTask<Void, Void, Void> {
+        private double speed = 0.0;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                long startTime = System.currentTimeMillis();
+                URL url = new URL(TEST_IMG);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                final long contentLength = connection.getContentLength();
+                long endTime = System.currentTimeMillis();
+                double megabits = contentLength / (1024 * 1024 * 8.0); //Megabits
+                double seconds = endTime - startTime / 1000.0;
+                speed = Math.round(megabits / seconds * 100.0) / 100.0;  //Megabits-per-second (Mbps)
+            } catch (Exception e) {
+                e.printStackTrace();
+                speed = 0;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            TextView speed = findViewById(R.id.speed);
+            speed.setText(String.format("Download speed: %s Mps", this.speed));
+            //this method will be running on UI thread
+        }
+
     }
 }
