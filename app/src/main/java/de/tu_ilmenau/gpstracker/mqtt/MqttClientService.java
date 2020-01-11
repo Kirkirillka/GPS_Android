@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
@@ -51,7 +50,7 @@ public class MqttClientService extends Service {
             locationManager = (LocationManager)
                     getSystemService(Context.LOCATION_SERVICE);
             locationListener = new ContLocationListener(clientWrapper, deviceId, wifiManager);
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                     timeoutVal * 1000, 0, locationListener);
         } catch (MqttException e) {
             e.printStackTrace(); //Todo

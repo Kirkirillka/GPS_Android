@@ -149,6 +149,12 @@ public class MqttClientWrapper {
             client.publish(subscriptionTopic, message);
             Log.d("file:  ", payload);
         } catch (UnsupportedEncodingException | MqttException e) {
+            try {
+                client.disconnect();
+                client.connect();
+            } catch (MqttException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
         }
     }

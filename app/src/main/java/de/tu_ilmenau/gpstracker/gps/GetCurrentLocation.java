@@ -35,11 +35,6 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -144,7 +139,9 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
     private void pushLocation() {
         //Download your image
-        new AsyncCaller().execute();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
+            new AsyncCaller().execute();
+        }
     }
 
     /*----Method to Check GPS is enable or disable ----- */
@@ -153,7 +150,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                 .getContentResolver();
         boolean gpsStatus = Settings.Secure
                 .isLocationProviderEnabled(contentResolver,
-                        LocationManager.NETWORK_PROVIDER);
+                        LocationManager.GPS_PROVIDER);
         if (gpsStatus) {
             return true;
 
@@ -256,6 +253,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     }
 
 
+    @SuppressLint("NewApi")
     private class AsyncCaller extends AsyncTask<Void, Void, Void> {
         private double speed = 0.0;
         private Location loc;
@@ -270,7 +268,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         protected Void doInBackground(Void... params) {
             try {
                 speed = SpeedTester.test();
-                loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                 wifiInfo = wifiManager.getConnectionInfo();
                 clientWrapper.publish(MessgeBuilder.buildMessage(loc, wifiInfo, deviceId, speed));
@@ -390,8 +388,8 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         });
 
         locationListener = new MyLocationListener();
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                2 * 1000, 0.5f, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                2 * 1000, 0.1f, locationListener);
         timeout = (EditText) findViewById(R.id.timeout);
     }
 }

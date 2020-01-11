@@ -7,6 +7,7 @@ import android.location.LocationListener;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientWrapper;
@@ -29,7 +30,9 @@ public class ContLocationListener implements LocationListener {
     @Override
     public void onLocationChanged(Location loc) {
         this.loc = loc;
-        new AsyncCaller().execute();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
+            new AsyncCaller().execute();
+        }
     }
 
     @Override
@@ -47,6 +50,7 @@ public class ContLocationListener implements LocationListener {
 
     }
 
+    @SuppressLint("NewApi")
     private class AsyncCaller extends AsyncTask<Void, Void, Void> {
         private double speed = 0.0;
         private WifiInfo wifiInfo;
