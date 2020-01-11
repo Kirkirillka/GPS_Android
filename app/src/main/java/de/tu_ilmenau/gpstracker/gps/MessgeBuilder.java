@@ -10,13 +10,14 @@ import de.tu_ilmenau.gpstracker.dbModel.Device;
 
 public class MessgeBuilder {
 
-    public static ClientDeviceMessage buildMessage(Location loc, WifiInfo wifiInfo, String deviceId) {
+    public static ClientDeviceMessage buildMessage(Location loc, WifiInfo wifiInfo, String deviceId, double speed) {
 //        GregorianCalendar cal = new GregorianCalendar();
         Date date = new Date();
 //        cal.setTime(date);
         ClientDeviceMessage.Block payload = new ClientDeviceMessage.Block();
         payload.setBssid(wifiInfo.getBSSID());
         payload.setSsid(wifiInfo.getSSID());
+        payload.setSpeed(speed);
         ClientDeviceMessage.Block.Signal signal = new ClientDeviceMessage.Block.Signal();
         signal.setRssi(wifiInfo.getRssi());
         payload.setSignal(signal);

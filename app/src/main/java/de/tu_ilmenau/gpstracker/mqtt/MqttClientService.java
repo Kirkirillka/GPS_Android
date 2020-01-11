@@ -52,7 +52,7 @@ public class MqttClientService extends Service {
                     getSystemService(Context.LOCATION_SERVICE);
             locationListener = new ContLocationListener(clientWrapper, deviceId, wifiManager);
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                    timeoutVal * 1000, 0.5f, locationListener);
+                    timeoutVal * 1000, 0, locationListener);
         } catch (MqttException e) {
             e.printStackTrace(); //Todo
         }

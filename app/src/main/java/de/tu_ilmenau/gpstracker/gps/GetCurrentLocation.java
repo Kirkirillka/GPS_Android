@@ -1,5 +1,6 @@
 package de.tu_ilmenau.gpstracker.gps;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -9,12 +10,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
@@ -29,23 +28,42 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import de.tu_ilmenau.gpstracker.R;
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientService;
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientWrapper;
+import de.tu_ilmenau.gpstracker.storage.SpeedTester;
 
 public class GetCurrentLocation extends Activity implements OnClickListener {
 
+    private final static int REQUEST_CODE_ASK_PERMISSIONS = 1;
+
+    /**
+     * Permissions that need to be explicitly requested from end user.
+     */
+    private static final String[] REQUIRED_SDK_PERMISSIONS = new String[]{
+            Manifest.permission.ACCESS_FINE_LOCATION};
+
+
     public static final String SERVICE_CLASSNAME = MqttClientService.class.getName();
-    private static final String TEST_IMG = "http://icons.iconarchive.com/icons/danleech/simple/128/android-icon.png";
+    static private final String IPV4_REGEX = "(([0-1]?[0-9]{1,2}\\.)|(2[0-4][0-9]\\.)|(25[0-5]\\.)){3}(([0-1]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))";
+    static private Pattern IPV4_PATTERN = Pattern.compile(IPV4_REGEX);
 
     private LocationManager locationManager = null;
     private LocationListener locationListener = null;
@@ -73,67 +91,23 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        deviceId = Settings.Secure.getString(getApplicationContext()
-                .getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        //if you want to lock screen for always Portrait mode
-        setRequestedOrientation(ActivityInfo
-                .SCREEN_ORIENTATION_PORTRAIT);
-
-//        pb = (ProgressBar) findViewById(R.id.progressBar1);
-        ipAddress = (EditText) findViewById(R.id.editIpAddress);
-//        pb.setVisibility(View.INVISIBLE);
-
-        xLocation = (EditText) findViewById(R.id.X);
-        yLocation = (EditText) findViewById(R.id.Y);
-
-
-        btnGetLocation = (Button) findViewById(R.id.btnLocation);
-        btnGetLocation.setOnClickListener(this);
-        pushManually = (Button) findViewById(R.id.pushManually);
-        pushManually.setOnClickListener(this);
-        resetTime = (Button) findViewById(R.id.resetTime);
-        resetTime.setOnClickListener(this);
-        pushContinuously = (Switch) findViewById(R.id.pushContinuously);
-        locationManager = (LocationManager)
-                getSystemService(Context.LOCATION_SERVICE);
-        pushContinuously.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (!isChecked && serviceIsRunning()) {
-                    stopService();
-                }
-                if (isChecked) {
-                    String timeoutStr = timeout.getText().toString();
-                    try {
-                        if (!timeoutStr.isEmpty()) {
-                            timeoutVal = Integer.parseInt(timeoutStr);
-                        }
-                        startService(timeoutVal);
-                    } catch (Exception e) {
-                        alertbox("Incorrect timeout", "Timeout should be integer value");
-                    }
-                }
-
-            }
-        });
-
-        locationListener = new MyLocationListener();
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                2 * 1000, 0.5f, locationListener);
-        timeout = (EditText) findViewById(R.id.timeout);
+        checkPermissions();
     }
 
     @SuppressLint("MissingPermission")
     public void enableMqtt() {
         ipAdd = ipAddress.getText().toString();
-        if (!ipAdd.isEmpty()) { //todo !isEmpty()
+        if (!ipAdd.isEmpty() && isValidIPV4(ipAdd)) { //todo !isEmpty()
             clientWrapper = MqttClientWrapper.getInstance(getApplicationContext(), ipAdd);
             clientWrapper.connect();
             enableMqtt = true;
         } else {
-            alertbox("broker address", "broker ip is not set");
+            alertbox("broker address", "broker ip is not correct");
         }
+    }
+
+    private static boolean isValidIPV4(final String s) {
+        return IPV4_PATTERN.matcher(s).matches();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -141,9 +115,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btnLocation:
-                if (!enableMqtt) {
-                    enableMqtt();
-                }
+                enableMqtt();
                 break;
             case R.id.pushManually:
                 pushManually();
@@ -165,40 +137,12 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         }
         if (flag && enableMqtt) {
             Log.v(TAG, "onClick");
-            @SuppressLint("MissingPermission")
-            Location loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            try {
-                WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                @SuppressLint("MissingPermission") WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                if (wifiInfo == null) {
-                    alertbox("Network error", "Network connection is off");
-                    return;
-                }
-                TextView speed = findViewById(R.id.speed);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                    NetworkInfo netInfo = cm.getActiveNetworkInfo();
-                    //should check null because in airplane mode it will be null
-                    NetworkCapabilities nc = cm.getNetworkCapabilities(cm.getActiveNetwork());
-                    int downSpeed = nc.getLinkDownstreamBandwidthKbps();
-                    int upSpeed = nc.getLinkUpstreamBandwidthKbps();
-                    speed.setText(String.format("Download speed: %s Mps", downSpeed / 1024.0));
-                } else {
-                    speedTest();
-                }
-                clientWrapper.publish(MessgeBuilder.buildMessage(loc, wifiInfo, deviceId));
-                xLocation.setText(loc.getLatitude() + "");
-                yLocation.setText(loc.getLongitude() + "");
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-
-//            pb.setVisibility(View.VISIBLE);
+            pushLocation();
         }
     }
 
 
-    private void speedTest() {
+    private void pushLocation() {
         //Download your image
         new AsyncCaller().execute();
     }
@@ -314,23 +258,23 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
     private class AsyncCaller extends AsyncTask<Void, Void, Void> {
         private double speed = 0.0;
-
+        private Location loc;
+        private WifiInfo wifiInfo;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
         }
 
+        @SuppressLint("MissingPermission")
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                long startTime = System.currentTimeMillis();
-                URL url = new URL(TEST_IMG);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                final long contentLength = connection.getContentLength();
-                long endTime = System.currentTimeMillis();
-                double megabits = contentLength / (1024 * 1024 * 8.0); //Megabits
-                double seconds = endTime - startTime / 1000.0;
-                speed = Math.round(megabits / seconds * 100.0) / 100.0;  //Megabits-per-second (Mbps)
+                speed = SpeedTester.test();
+                loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                wifiInfo = wifiManager.getConnectionInfo();
+                clientWrapper.publish(MessgeBuilder.buildMessage(loc, wifiInfo, deviceId, speed));
+
             } catch (Exception e) {
                 e.printStackTrace();
                 speed = 0;
@@ -342,9 +286,112 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
             TextView speed = findViewById(R.id.speed);
-            speed.setText(String.format("Download speed: %s Mps", this.speed));
+            xLocation.setText(loc.getLatitude() + "");
+            yLocation.setText(loc.getLongitude() + "");
+            if (wifiInfo == null) {
+                alertbox("Network error", "Network connection is off");
+                return;
+            }
+            speed.setText(String.format("Download speed: %s Kps", this.speed));
             //this method will be running on UI thread
         }
 
+    }
+
+
+    protected void checkPermissions() {
+        final List<String> missingPermissions = new ArrayList<String>();
+        // check all required dynamic permissions
+        for (final String permission : REQUIRED_SDK_PERMISSIONS) {
+            final int result = ContextCompat.checkSelfPermission(this, permission);
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                missingPermissions.add(permission);
+            }
+        }
+        if (!missingPermissions.isEmpty()) {
+            // request all missing permissions
+            final String[] permissions = missingPermissions
+                    .toArray(new String[missingPermissions.size()]);
+            ActivityCompat.requestPermissions(this, permissions, REQUEST_CODE_ASK_PERMISSIONS);
+        } else {
+            final int[] grantResults = new int[REQUIRED_SDK_PERMISSIONS.length];
+            Arrays.fill(grantResults, PackageManager.PERMISSION_GRANTED);
+            onRequestPermissionsResult(REQUEST_CODE_ASK_PERMISSIONS, REQUIRED_SDK_PERMISSIONS,
+                    grantResults);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[],
+                                           @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_ASK_PERMISSIONS:
+                for (int index = permissions.length - 1; index >= 0; --index) {
+                    if (grantResults[index] != PackageManager.PERMISSION_GRANTED) {
+                        // exit the app if one permission is not granted
+                        Toast.makeText(this, "Required permission '" + permissions[index]
+                                + "' not granted, exiting", Toast.LENGTH_LONG).show();
+                        finish();
+                        return;
+                    }
+                }
+                // all permissions were granted
+                initialize();
+                break;
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void initialize() {
+        setContentView(R.layout.main);
+        deviceId = Settings.Secure.getString(getApplicationContext()
+                .getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        //if you want to lock screen for always Portrait mode
+        setRequestedOrientation(ActivityInfo
+                .SCREEN_ORIENTATION_PORTRAIT);
+
+//        pb = (ProgressBar) findViewById(R.id.progressBar1);
+        ipAddress = (EditText) findViewById(R.id.editIpAddress);
+//        pb.setVisibility(View.INVISIBLE);
+
+        xLocation = (EditText) findViewById(R.id.X);
+        yLocation = (EditText) findViewById(R.id.Y);
+
+
+        btnGetLocation = (Button) findViewById(R.id.btnLocation);
+        btnGetLocation.setOnClickListener(this);
+        pushManually = (Button) findViewById(R.id.pushManually);
+        pushManually.setOnClickListener(this);
+        resetTime = (Button) findViewById(R.id.resetTime);
+        resetTime.setOnClickListener(this);
+        pushContinuously = (Switch) findViewById(R.id.pushContinuously);
+        locationManager = (LocationManager)
+                getSystemService(Context.LOCATION_SERVICE);
+        pushContinuously.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (!isChecked && serviceIsRunning()) {
+                    stopService();
+                }
+                if (isChecked) {
+                    String timeoutStr = timeout.getText().toString();
+                    try {
+                        if (!timeoutStr.isEmpty()) {
+                            timeoutVal = Integer.parseInt(timeoutStr);
+                        }
+                        startService(timeoutVal);
+                    } catch (Exception e) {
+                        pushContinuously.setChecked(false);
+                        alertbox("Incorrect timeout", "Timeout should be integer value");
+                    }
+                }
+
+            }
+        });
+
+        locationListener = new MyLocationListener();
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                2 * 1000, 0.5f, locationListener);
+        timeout = (EditText) findViewById(R.id.timeout);
     }
 }

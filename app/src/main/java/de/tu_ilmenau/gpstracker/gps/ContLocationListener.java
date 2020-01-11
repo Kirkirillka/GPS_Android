@@ -6,21 +6,18 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import java.util.Date;
-import java.util.GregorianCalendar;
-
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientWrapper;
+import de.tu_ilmenau.gpstracker.storage.SpeedTester;
 
 public class ContLocationListener implements LocationListener {
 
-    MqttClientWrapper clientWrapper;
-    String deviceId;
-    WifiManager wifiManager;
+    private MqttClientWrapper clientWrapper;
+    private String deviceId;
+    private WifiManager wifiManager;
+    private Location loc;
 
     public ContLocationListener(MqttClientWrapper clientWrapper, String deviceId, WifiManager wifiManager) {
         this.wifiManager = wifiManager;
@@ -31,18 +28,8 @@ public class ContLocationListener implements LocationListener {
 
     @Override
     public void onLocationChanged(Location loc) {
-        @SuppressLint("MissingPermission") WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        if (wifiInfo == null) {
-            return;
-        }
-        GregorianCalendar cal = new GregorianCalendar();
-        Date date = new Date();
-        cal.setTime(date);
-        try {
-            clientWrapper.publish(MessgeBuilder.buildMessage(loc, wifiInfo, deviceId));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+        this.loc = loc;
+        new AsyncCaller().execute();
     }
 
     @Override
@@ -57,6 +44,35 @@ public class ContLocationListener implements LocationListener {
 
     @Override
     public void onProviderDisabled(String provider) {
+
+    }
+
+    private class AsyncCaller extends AsyncTask<Void, Void, Void> {
+        private double speed = 0.0;
+        private WifiInfo wifiInfo;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @SuppressLint("MissingPermission")
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                speed = SpeedTester.test();
+                wifiInfo = wifiManager.getConnectionInfo();
+                clientWrapper.publish(MessgeBuilder.buildMessage(loc, wifiInfo, deviceId, speed));
+            } catch (Exception e) {
+                e.printStackTrace();
+                speed = 0;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+        }
 
     }
 }
