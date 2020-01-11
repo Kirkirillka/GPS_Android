@@ -1,10 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:weightSum="1">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right">
+
+        <TextView
+            android:id="@+id/speed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:ems="7"
+            android:textStyle="italic"
+            android:textSize="20dp"
+            android:hint="Download speed"
+            android:layout_gravity="right"
+            android:inputType="numberSigned" />
+    </LinearLayout>
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -12,10 +40,12 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:typeface="monospace"
             android:text="Location coordinates:"
             android:layout_weight="0.1"
             android:gravity="left"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:textColor="#000000"/>
 
         <EditText
             android:id="@+id/X"
@@ -23,6 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.1"
             android:ems="10"
+            android:textStyle="italic"
             android:hint="X="
             android:layout_gravity="center"
             android:inputType="numberSigned" />
@@ -32,20 +63,29 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.1"
             android:ems="10"
+            android:textStyle="italic"
             android:hint="Y="
             android:layout_gravity="center"
             android:inputType="numberSigned" />
     </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="@android:color/black"/>
     <LinearLayout
         android:layout_marginTop="30dp"
+        android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
+
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Enter mqtt ip address:"
+        android:typeface="monospace"
+        android:text="MQTT IP address:"
         android:layout_weight="0.1"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:textColor="#000000"/>
 
         <EditText
             android:id="@+id/editIpAddress"
@@ -56,17 +96,20 @@
 
             <requestFocus></requestFocus>
         </EditText>
+
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="400dp"
-        android:layout_height="wrap_content"
-        android:gravity="center">
-    <Button
-        android:id="@+id/btnLocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Connect"></Button>
+        android:layout_gravity="center">
+
+        <Button
+            android:id="@+id/btnLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Connect">
+        </Button>
     </LinearLayout>
 
     <LinearLayout
@@ -94,9 +137,11 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Enter timeout value"
+            android:typeface="monospace"
+            android:text="Time-out value:"
             android:gravity="center"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:textColor="#000000"/>
         <EditText
             android:id="@+id/timeout"
             android:layout_width="185dp"
@@ -123,19 +168,5 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Push manually"></Button>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="400dp"
-        android:layout_height="wrap_content"
-        android:gravity="center">
-        <EditText
-        android:id="@+id/speed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.1"
-        android:ems="10"
-        android:hint="Download speed"
-        android:layout_gravity="center"
-        android:inputType="numberSigned" />
     </LinearLayout>
 </LinearLayout>
