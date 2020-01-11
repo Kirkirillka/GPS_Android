@@ -8,7 +8,7 @@ import java.util.Date;
 import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
 import de.tu_ilmenau.gpstracker.dbModel.Device;
 
-public class MessgeBuilder {
+public class MessageBuilder {
 
     public static ClientDeviceMessage buildMessage(Location loc, WifiInfo wifiInfo, String deviceId, double speed) {
 //        GregorianCalendar cal = new GregorianCalendar();

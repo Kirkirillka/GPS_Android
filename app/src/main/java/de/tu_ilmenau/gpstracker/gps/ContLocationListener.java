@@ -66,7 +66,7 @@ public class ContLocationListener implements LocationListener {
             try {
                 speed = SpeedTester.test();
                 wifiInfo = wifiManager.getConnectionInfo();
-                clientWrapper.publish(MessgeBuilder.buildMessage(loc, wifiInfo, deviceId, speed));
+                clientWrapper.publish(MessageBuilder.buildMessage(loc, wifiInfo, deviceId, speed));
             } catch (Exception e) {
                 e.printStackTrace();
                 speed = 0;

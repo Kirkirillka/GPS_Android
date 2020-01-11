@@ -70,8 +70,8 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     private Button resetTime;
     private Switch pushContinuously;
     private EditText timeout;
-    private EditText xLocation;
-    private EditText yLocation;
+    private TextView xLocation;
+    private TextView yLocation;
 
     private EditText ipAddress;
     //    private ProgressBar pb;
@@ -271,7 +271,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                 loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                 wifiInfo = wifiManager.getConnectionInfo();
-                clientWrapper.publish(MessgeBuilder.buildMessage(loc, wifiInfo, deviceId, speed));
+                clientWrapper.publish(MessageBuilder.buildMessage(loc, wifiInfo, deviceId, speed));
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -353,8 +353,8 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         ipAddress = (EditText) findViewById(R.id.editIpAddress);
 //        pb.setVisibility(View.INVISIBLE);
 
-        xLocation = (EditText) findViewById(R.id.X);
-        yLocation = (EditText) findViewById(R.id.Y);
+        xLocation = (TextView) findViewById(R.id.X);
+        yLocation = (TextView) findViewById(R.id.Y);
 
 
         btnGetLocation = (Button) findViewById(R.id.btnLocation);

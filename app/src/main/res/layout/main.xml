@@ -63,7 +63,7 @@
             android:ems="5"
             android:textSize="30dp"
             android:textStyle="italic"
-            android:hint="X="
+            android:hint="X"
             android:inputType="numberSigned" />
 
         <TextView
@@ -74,7 +74,7 @@
             android:layout_marginLeft="20dp"
             android:ems="5"
             android:gravity="left"
-            android:hint="Y="
+            android:hint="Y"
             android:inputType="numberSigned"
             android:textSize="30dp"
             android:textStyle="italic" />
@@ -90,7 +90,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:text="MQTT IP address:"
-        android:layout_weight="2"
+        android:layout_weight="1"
         android:textSize="27dp"
         android:textColor="#000000"/>
 
@@ -102,24 +102,20 @@
         android:layout_marginBottom="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center">
+        android:layout_gravity="left">
         <EditText
             android:id="@+id/editIpAddress"
-            android:gravity="left"
+            android:layout_gravity="left"
             android:layout_marginLeft="20dp"
-            android:layout_width="100dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:hint="255.255.255.255"
             android:textSize="30dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:editable="true">
-
-            <requestFocus></requestFocus>
+            android:layout_weight="1">
         </EditText>
 
         <Button
             android:id="@+id/btnLocation"
-            android:layout_marginLeft="40dp"
             android:layout_marginRight="20dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -133,6 +129,31 @@
         android:layout_height="2dp"
         android:layout_marginTop="25dp"
         android:background="@android:color/darker_gray"/>
+
+    <LinearLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_marginTop="40dp">
+
+        <TextView
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:text="Send message once "
+            android:layout_gravity="left"
+            android:textSize="27dp"
+            android:layout_weight="1"
+            android:textColor="#000000"/>
+
+        <Button
+            android:id="@+id/pushManually"
+            android:layout_marginRight="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="17dp"
+            android:text="Push once"></Button>
+
+    </LinearLayout>
 
     <LinearLayout
         android:orientation="horizontal"
@@ -158,49 +179,21 @@
 
         <EditText
             android:id="@+id/timeout"
-            android:layout_width="185dp"
-            android:layout_marginLeft="20dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_gravity="left"
             android:layout_weight="1"
-            android:textSize="30dp"
-            android:editable="true">
-
-            <requestFocus></requestFocus>
+            android:textSize="30dp">
         </EditText>
 
         <Button
             android:id="@+id/resetTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="40dp"
             android:layout_marginRight="20dp"
             android:textSize="17dp"
             android:text="Reset timeout"></Button>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_marginTop="40dp">
-
-        <TextView
-            android:layout_width="350dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:text="Send message once "
-            android:layout_gravity="left"
-            android:textSize="27dp"
-            android:layout_weight="1"
-            android:textColor="#000000"/>
-
-        <Button
-            android:id="@+id/pushManually"
-            android:layout_marginRight="20dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="17dp"
-            android:text="Push once"></Button>
-
     </LinearLayout>
 
     <LinearLayout
