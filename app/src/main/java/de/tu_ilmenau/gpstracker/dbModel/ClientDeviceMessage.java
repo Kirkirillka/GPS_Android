@@ -47,6 +47,9 @@ public class ClientDeviceMessage extends Coordinate {
         @JsonProperty("signal")
         private Signal signal;
 
+        @JsonProperty("speed")
+        private double speed;
+
 
         public static class Signal {
 
@@ -92,6 +95,14 @@ public class ClientDeviceMessage extends Coordinate {
 
         public void setSignal(Signal signal) {
             this.signal = signal;
+        }
+
+        public double getSpeed() {
+            return speed;
+        }
+
+        public void setSpeed(double speed) {
+            this.speed = speed;
         }
     }
 
