@@ -117,7 +117,10 @@
                 android:layout_marginLeft="20dp"
                 android:layout_weight="1"
                 android:hint="255.255.255.255"
-                android:textSize="30dp"></EditText>
+                android:textSize="30dp">
+
+                <requestFocus></requestFocus>
+            </EditText>
 
             <Button
                 android:id="@+id/btnLocation"
@@ -189,7 +192,8 @@
                 android:layout_gravity="left"
                 android:layout_marginLeft="20dp"
                 android:layout_weight="1"
-                android:textSize="30dp"></EditText>
+                android:textSize="30dp">
+            </EditText>
 
             <Button
                 android:id="@+id/resetTime"
@@ -204,7 +208,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="40dp">
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="20dp">
 
             <Switch
                 android:id="@+id/pushContinuously"

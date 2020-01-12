@@ -97,7 +97,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
             clientWrapper.connect();
             enableMqtt = true;
         } else {
-            alertbox("broker address", "broker ip is not correct");
+            alertbox("Broker address", "Broker IP is not correct!");
         }
     }
 
@@ -125,10 +125,10 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     private void pushManually() {
         flag = displayGpsStatus();
         if (!flag) {
-            alertbox("Gps Status!!", "Your GPS is Off");
+            alertbox("GPS Status", "Your GPS is off!");
         }
         if (!enableMqtt) {
-            alertbox("Mqtt error!!", "Your do not connected to mqtt");
+            alertbox("MQTT error", "You are not connected to MQTT!");
         }
         if (flag && enableMqtt) {
             Log.v(TAG, "onClick");
@@ -287,7 +287,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
             xLocation.setText(loc.getLatitude() + "");
             yLocation.setText(loc.getLongitude() + "");
             if (wifiInfo == null) {
-                alertbox("Network error", "Network connection is off");
+                alertbox("Network error", "Network connection is off!");
                 return;
             }
             speed.setText(String.format("Download speed: %s Kps", this.speed));
@@ -328,7 +328,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                     if (grantResults[index] != PackageManager.PERMISSION_GRANTED) {
                         // exit the app if one permission is not granted
                         Toast.makeText(this, "Required permission '" + permissions[index]
-                                + "' not granted, exiting", Toast.LENGTH_LONG).show();
+                                + "' is not granted, exiting ...", Toast.LENGTH_LONG).show();
                         finish();
                         return;
                     }
@@ -380,7 +380,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                         startService(timeoutVal);
                     } catch (Exception e) {
                         pushContinuously.setChecked(false);
-                        alertbox("Incorrect timeout", "Timeout should be integer value");
+                        alertbox("Incorrect time-out", "Time-out should be an integer value!");
                     }
                 }
 
