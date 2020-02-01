@@ -10,8 +10,14 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
+import java.math.BigDecimal;
+
+import de.tu_ilmenau.gpstracker.SpeedTestResult;
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientWrapper;
-import de.tu_ilmenau.gpstracker.storage.SpeedTester;
+import fr.bmartel.speedtest.SpeedTestReport;
+import fr.bmartel.speedtest.SpeedTestSocket;
+import fr.bmartel.speedtest.inter.ISpeedTestListener;
+import fr.bmartel.speedtest.model.SpeedTestError;
 
 public class ContLocationListener implements LocationListener {
 
@@ -52,7 +58,8 @@ public class ContLocationListener implements LocationListener {
 
     @SuppressLint("NewApi")
     private class AsyncCaller extends AsyncTask<Void, Void, Void> {
-        private double speed = 0.0;
+        private double downSpeed = 0.0;
+        private double upSpeed = 0.0;
         private WifiInfo wifiInfo;
 
         @Override
@@ -63,15 +70,68 @@ public class ContLocationListener implements LocationListener {
         @SuppressLint("MissingPermission")
         @Override
         protected Void doInBackground(Void... params) {
+
             try {
-                speed = SpeedTester.test();
+                speedTest();
+//                downSpeed = SpeedTester.test();
                 wifiInfo = wifiManager.getConnectionInfo();
-                clientWrapper.publish(MessageBuilder.buildMessage(loc, wifiInfo, deviceId, speed));
+                clientWrapper.publish(MessageBuilder.buildMessage(loc, wifiInfo, deviceId, downSpeed, upSpeed));
             } catch (Exception e) {
                 e.printStackTrace();
-                speed = 0;
+                downSpeed = 0;
             }
             return null;
+        }
+        private void speedTest() {
+            SpeedTestSocket speedTestSocket = new SpeedTestSocket();
+            final SpeedTestResult result = new SpeedTestResult();
+            speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {
+
+                @Override
+                public void onCompletion(SpeedTestReport report) {
+                    // called when download/upload is complete
+                    synchronized (result) {
+                        result.setSpeed(report.getTransferRateBit());
+                        result.setFinish(true);
+                    }
+                    System.out.println("[COMPLETED] rate in octet/s : " + report.getTransferRateOctet());
+                    System.out.println("[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
+
+                }
+
+                @Override
+                public void onError(SpeedTestError speedTestError, String errorMessage) {
+                    synchronized (result) {
+                        result.setSpeed(BigDecimal.ZERO);
+                        result.setFinish(true);
+                    }
+                    // called when a download/upload error occur
+
+                }
+
+                @Override
+                public void onProgress(float percent, SpeedTestReport report) {
+                    // called to notify download/upload progress
+                    System.out.println("[PROGRESS] progress : " + percent + "%");
+                    System.out.println("[PROGRESS] rate in octet/s : " + report.getTransferRateOctet());
+                    System.out.println("[PROGRESS] rate in bit/s   : " + report.getTransferRateBit());
+                }
+            });
+            speedTestSocket.startDownload("http://ipv4.ikoula.testdebit.info/1M.iso");
+            while (!result.isFinish()) {
+                synchronized (result) {
+
+                }
+            }
+            downSpeed = result.getSpeed().doubleValue() / 1024;
+            result.setFinish(false);
+            speedTestSocket.startUpload("http://ipv4.ikoula.testdebit.info/", 1000000);
+            while (!result.isFinish()) {
+                synchronized (result) {
+
+                }
+            }
+            upSpeed = result.getSpeed().doubleValue() / 1024;
         }
 
         @Override

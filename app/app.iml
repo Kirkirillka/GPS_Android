@@ -19,7 +19,7 @@
         <option name="ALLOW_USER_CONFIGURATION" value="false" />
         <option name="MANIFEST_FILE_RELATIVE_PATH" value="/src/main/AndroidManifest.xml" />
         <option name="RES_FOLDER_RELATIVE_PATH" value="/src/main/res" />
-        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/src/main/res" />
+        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/src/main/res;file://$MODULE_DIR$/build/generated/res/resValues/debug" />
         <option name="TEST_RES_FOLDERS_RELATIVE_PATH" value="" />
         <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/src/main/assets" />
       </configuration>
@@ -109,6 +109,7 @@
     <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.9.6@jar" level="project" />
     <orderEntry type="library" name="Gradle: javax.xml.bind:jaxb-api:2.1@jar" level="project" />
     <orderEntry type="library" name="Gradle: xerces:xercesImpl:2.8.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: fr.bmartel:jspeedtest:1.32.1@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2@jar" level="project" />
     <orderEntry type="library" name="Gradle: androidx.collection:collection:1.0.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: androidx.lifecycle:lifecycle-common:2.0.0@jar" level="project" />
@@ -119,6 +120,8 @@
     <orderEntry type="library" name="Gradle: javax.xml.stream:stax-api:1.0-2@jar" level="project" />
     <orderEntry type="library" name="Gradle: javax.activation:activation:1.1@jar" level="project" />
     <orderEntry type="library" name="Gradle: xml-apis:xml-apis:1.3.03@jar" level="project" />
+    <orderEntry type="library" name="Gradle: commons-net:commons-net:3.6@jar" level="project" />
+    <orderEntry type="library" name="Gradle: fr.bmartel:http-endec:1.04@jar" level="project" />
     <orderEntry type="library" name="Gradle: androidx.constraintlayout:constraintlayout-solver:1.1.3@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services:9.2.0@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-contextmanager:9.2.0@aar" level="project" />

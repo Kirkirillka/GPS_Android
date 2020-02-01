@@ -35,15 +35,27 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.R;
+import de.tu_ilmenau.gpstracker.SpeedTestResult;
+import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
+import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientService;
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientWrapper;
-import de.tu_ilmenau.gpstracker.storage.SpeedTester;
+//import de.tu_ilmenau.gpstracker.storage.SpeedTester;
+import fr.bmartel.speedtest.SpeedTestReport;
+import fr.bmartel.speedtest.SpeedTestSocket;
+import fr.bmartel.speedtest.inter.ISpeedTestListener;
+import fr.bmartel.speedtest.model.SpeedTestError;
 
 public class GetCurrentLocation extends Activity implements OnClickListener {
 
@@ -81,19 +93,21 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     private Boolean flag = false;
     private boolean enableMqtt = false;
     private String ipAdd;
+    private SqliteBuffer buffer;
 
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         checkPermissions();
+        buffer = new SqliteBuffer(this);
     }
 
     @SuppressLint("MissingPermission")
     public void enableMqtt() {
         ipAdd = ipAddress.getText().toString();
         if (!ipAdd.isEmpty() && isValidIPV4(ipAdd)) { //todo !isEmpty()
-            clientWrapper = MqttClientWrapper.getInstance(getApplicationContext(), ipAdd);
+            clientWrapper = MqttClientWrapper.getInstance(getApplicationContext(), ipAdd, buffer);
             clientWrapper.connect();
             enableMqtt = true;
         } else {
@@ -130,9 +144,19 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         if (!enableMqtt) {
             alertbox("MQTT error", "You are not connected to MQTT!");
         }
-        if (flag && enableMqtt) {
+        if (flag) {
             Log.v(TAG, "onClick");
             pushLocation();
+        }
+    }
+
+    private void bufferLocation(ClientDeviceMessage message) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            String payload = mapper.writeValueAsString(message);
+            buffer.insertValue(payload);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
     }
 
@@ -150,7 +174,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                 .getContentResolver();
         boolean gpsStatus = Settings.Secure
                 .isLocationProviderEnabled(contentResolver,
-                        LocationManager.GPS_PROVIDER);
+                        Config.LOC_MANAGER);
         if (gpsStatus) {
             return true;
 
@@ -255,9 +279,11 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
     @SuppressLint("NewApi")
     private class AsyncCaller extends AsyncTask<Void, Void, Void> {
-        private double speed = 0.0;
+        private double downSpeed = 0.0;
+        private double upSpeed = 0.0;
         private Location loc;
         private WifiInfo wifiInfo;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -266,31 +292,90 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         @SuppressLint("MissingPermission")
         @Override
         protected Void doInBackground(Void... params) {
+
+
             try {
-                speed = SpeedTester.test();
-                loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                speedTest();
+//                speed = SpeedTester.test();
+                loc = locationManager.getLastKnownLocation(Config.LOC_MANAGER);
                 WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                 wifiInfo = wifiManager.getConnectionInfo();
-                clientWrapper.publish(MessageBuilder.buildMessage(loc, wifiInfo, deviceId, speed));
-
+                ClientDeviceMessage message = MessageBuilder.buildMessage(loc, wifiInfo, deviceId, downSpeed, upSpeed);
+                if (enableMqtt) {
+                    clientWrapper.publish(message);
+                } else {
+                    bufferLocation(message);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
-                speed = 0;
+                downSpeed = 0;
             }
             return null;
+        }
+
+        private void speedTest() {
+            SpeedTestSocket speedTestSocket = new SpeedTestSocket();
+            final SpeedTestResult result = new SpeedTestResult();
+            speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {
+
+                @Override
+                public void onCompletion(SpeedTestReport report) {
+                    // called when download/upload is complete
+                    synchronized (result) {
+                        result.setSpeed(report.getTransferRateBit());
+                        result.setFinish(true);
+                    }
+                    System.out.println("[COMPLETED] rate in octet/s : " + report.getTransferRateOctet());
+                    System.out.println("[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
+
+                }
+
+                @Override
+                public void onError(SpeedTestError speedTestError, String errorMessage) {
+                    synchronized (result) {
+                        result.setSpeed(BigDecimal.ZERO);
+                        result.setFinish(true);
+                    }
+                    // called when a download/upload error occur
+
+                }
+
+                @Override
+                public void onProgress(float percent, SpeedTestReport report) {
+                    // called to notify download/upload progress
+                    System.out.println("[PROGRESS] progress : " + percent + "%");
+                    System.out.println("[PROGRESS] rate in octet/s : " + report.getTransferRateOctet());
+                    System.out.println("[PROGRESS] rate in bit/s   : " + report.getTransferRateBit());
+                }
+            });
+            speedTestSocket.startDownload("http://ipv4.ikoula.testdebit.info/1M.iso");
+            while (!result.isFinish()) {
+                synchronized (result) {
+
+                }
+            }
+            downSpeed = result.getSpeed().doubleValue() / 1024;
+            result.setFinish(false);
+            speedTestSocket.startUpload("http://ipv4.ikoula.testdebit.info/", 1000000);
+            while (!result.isFinish()) {
+                synchronized (result) {
+
+                }
+            }
+            upSpeed = result.getSpeed().doubleValue() / 1024;
         }
 
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            TextView speed = findViewById(R.id.speed);
+            TextView speed = findViewById(R.id.downSpeed);
             xLocation.setText(loc.getLatitude() + "");
             yLocation.setText(loc.getLongitude() + "");
             if (wifiInfo == null) {
                 alertbox("Network error", "Network connection is off!");
                 return;
             }
-            speed.setText(String.format("Download speed: %s Kps", this.speed));
+            speed.setText(String.format("Download speed: %s Kps", this.downSpeed));
             //this method will be running on UI thread
         }
 
@@ -388,7 +473,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         });
 
         locationListener = new MyLocationListener();
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+        locationManager.requestLocationUpdates(Config.LOC_MANAGER,
                 2 * 1000, 0.1f, locationListener);
         timeout = (EditText) findViewById(R.id.timeout);
     }

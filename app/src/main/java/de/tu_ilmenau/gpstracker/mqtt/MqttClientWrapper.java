@@ -21,13 +21,17 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.tu_ilmenau.gpstracker.database.BufferValue;
+import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
 
 
@@ -36,6 +40,8 @@ public class MqttClientWrapper {
 
     private MqttClient client;
     Context context;
+    private SqliteBuffer buffer;
+
 
     String serverIp = "10.48.226.193";//TODO add ip address and port
     final String port = "1883";
@@ -49,11 +55,12 @@ public class MqttClientWrapper {
 
     protected ServiceConnection serverConn;
 
-    public static MqttClientWrapper getInstance(Context context, String serverIp) {
+    public static MqttClientWrapper getInstance(Context context, String serverIp, SqliteBuffer buffer
+    ) {
         MqttClientWrapper clientWrapper = connections.get(serverIp);
         if (clientWrapper == null) {
             try {
-                clientWrapper = new MqttClientWrapper(context, serverIp);
+                clientWrapper = new MqttClientWrapper(context, serverIp, buffer);
             } catch (MqttException e) {
                 e.printStackTrace();
             }
@@ -71,8 +78,9 @@ public class MqttClientWrapper {
         this.context = context;
     }
 
-    public MqttClientWrapper(Context context, String serverIp) throws MqttException {
+    public MqttClientWrapper(Context context, String serverIp, SqliteBuffer buffer) throws MqttException {
         this.context = context;
+        this.buffer = buffer;
         this.serverIp = serverIp;
         String clientId = MqttClient.generateClientId();
         String serverUri = String.format("%s://%s:%s", protocol, this.serverIp, port);
@@ -144,18 +152,30 @@ public class MqttClientWrapper {
         String payload = mapper.writeValueAsString(clientMessage);
         byte[] encodedPayload = new byte[0];
         try {
+            if (buffer.getCount() > 0) {
+                List<BufferValue> all = buffer.getAll();
+                List<Integer> ids = new ArrayList<>(all.size());
+                for (BufferValue val : all) {
+                    encodedPayload = val.getValue().getBytes("UTF-8");
+                    MqttMessage message = new MqttMessage(encodedPayload);
+                    client.publish(subscriptionTopic, message);
+                    ids.add(val.getId());
+                    Log.d("file:  ", payload);
+                }
+                buffer.delete(ids);
+            }
             encodedPayload = payload.getBytes("UTF-8");
             MqttMessage message = new MqttMessage(encodedPayload);
             client.publish(subscriptionTopic, message);
             Log.d("file:  ", payload);
         } catch (UnsupportedEncodingException | MqttException e) {
+            buffer.insertValue(payload);
             try {
                 client.disconnect();
                 client.connect();
             } catch (MqttException ex) {
                 ex.printStackTrace();
             }
-            e.printStackTrace();
         }
     }
 

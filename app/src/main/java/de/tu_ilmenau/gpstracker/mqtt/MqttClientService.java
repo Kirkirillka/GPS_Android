@@ -14,6 +14,8 @@ import androidx.annotation.Nullable;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 
+import de.tu_ilmenau.gpstracker.Config;
+import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.gps.ContLocationListener;
 
 import static com.google.android.gms.plus.PlusOneDummyView.TAG;
@@ -25,6 +27,7 @@ public class MqttClientService extends Service {
     private LocationListener locationListener;
     private MqttClientWrapper clientWrapper;
     private LocationManager locationManager;
+    private SqliteBuffer buffer;
 
     public MqttClientService() {
         super();
@@ -42,7 +45,8 @@ public class MqttClientService extends Service {
         int i = super.onStartCommand(intent, flags, startId);
         String ip = intent.getStringExtra("IP");
         try {
-            clientWrapper = new MqttClientWrapper(getApplicationContext(), ip);
+            buffer = new SqliteBuffer(this);
+            clientWrapper = new MqttClientWrapper(getApplicationContext(), ip, buffer);
             clientWrapper.connect();
             int timeoutVal = intent.getIntExtra("timeout", 0);
             String deviceId = intent.getStringExtra("device");
@@ -50,7 +54,7 @@ public class MqttClientService extends Service {
             locationManager = (LocationManager)
                     getSystemService(Context.LOCATION_SERVICE);
             locationListener = new ContLocationListener(clientWrapper, deviceId, wifiManager);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+            locationManager.requestLocationUpdates(Config.LOC_MANAGER,
                     timeoutVal * 1000, 0, locationListener);
         } catch (MqttException e) {
             e.printStackTrace(); //Todo
