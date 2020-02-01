@@ -368,14 +368,16 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            TextView speed = findViewById(R.id.downSpeed);
+            TextView speed = findViewById(R.id.speed);
+            TextView upSpeed = findViewById(R.id.upSpeed);
             xLocation.setText(loc.getLatitude() + "");
             yLocation.setText(loc.getLongitude() + "");
             if (wifiInfo == null) {
                 alertbox("Network error", "Network connection is off!");
                 return;
             }
-            speed.setText(String.format("Download speed: %s Kps", this.downSpeed));
+            speed.setText(String.format("Down speed: %s Kps", this.downSpeed));
+            speed.setText(String.format("Up speed: %s Kps", this.upSpeed));
             //this method will be running on UI thread
         }
 
