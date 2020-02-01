@@ -38,6 +38,7 @@ import androidx.core.content.ContextCompat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +48,7 @@ import java.util.regex.Pattern;
 import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.R;
 import de.tu_ilmenau.gpstracker.SpeedTestResult;
+import de.tu_ilmenau.gpstracker.database.BufferValue;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientService;
@@ -84,6 +86,8 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     private EditText timeout;
     private TextView xLocation;
     private TextView yLocation;
+    TextView downSpeedText;
+    TextView upSpeedText;
 
     private EditText ipAddress;
     //    private ProgressBar pb;
@@ -100,7 +104,6 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         checkPermissions();
-        buffer = new SqliteBuffer(this);
     }
 
     @SuppressLint("MissingPermission")
@@ -368,16 +371,14 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            TextView speed = findViewById(R.id.speed);
-            TextView upSpeed = findViewById(R.id.upSpeed);
             xLocation.setText(loc.getLatitude() + "");
             yLocation.setText(loc.getLongitude() + "");
             if (wifiInfo == null) {
                 alertbox("Network error", "Network connection is off!");
                 return;
             }
-            speed.setText(String.format("Down speed: %s Kps", this.downSpeed));
-            speed.setText(String.format("Up speed: %s Kps", this.upSpeed));
+            downSpeedText.setText(String.format("Down speed: %s Kps", this.downSpeed));
+            downSpeedText.setText(String.format("Up speed: %s Kps", this.upSpeed));
             //this method will be running on UI thread
         }
 
@@ -442,7 +443,8 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
         xLocation = (TextView) findViewById(R.id.X);
         yLocation = (TextView) findViewById(R.id.Y);
-
+        downSpeedText = findViewById(R.id.speed);
+        upSpeedText = findViewById(R.id.upSpeed);
 
         btnGetLocation = (Button) findViewById(R.id.btnLocation);
         btnGetLocation.setOnClickListener(this);
@@ -478,5 +480,19 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         locationManager.requestLocationUpdates(Config.LOC_MANAGER,
                 2 * 1000, 0.1f, locationListener);
         timeout = (EditText) findViewById(R.id.timeout);
+        buffer = new SqliteBuffer(this);
+        if (buffer.getCount() >0) {
+            List<BufferValue> all = buffer.getAll();
+            BufferValue bufferValue = all.get(all.size() - 1);
+            try {
+                ClientDeviceMessage message = new ObjectMapper().readValue(bufferValue.getValue(), ClientDeviceMessage.class);
+                downSpeedText.setText(String.format("Down speed: %s Kps", message.getPayload().getDownSpeed()));
+                downSpeedText.setText(String.format("Up speed: %s Kps", message.getPayload().getUpSpeed()));
+                xLocation.setText(message.getLatitude() + "");
+                yLocation.setText(message.getLongitude() + "");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
