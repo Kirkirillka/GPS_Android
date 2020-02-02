@@ -14,9 +14,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -39,7 +37,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,17 +44,11 @@ import java.util.regex.Pattern;
 
 import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.R;
-import de.tu_ilmenau.gpstracker.SpeedTestResult;
 import de.tu_ilmenau.gpstracker.database.BufferValue;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientService;
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientWrapper;
-//import de.tu_ilmenau.gpstracker.storage.SpeedTester;
-import fr.bmartel.speedtest.SpeedTestReport;
-import fr.bmartel.speedtest.SpeedTestSocket;
-import fr.bmartel.speedtest.inter.ISpeedTestListener;
-import fr.bmartel.speedtest.model.SpeedTestError;
 
 public class GetCurrentLocation extends Activity implements OnClickListener {
 
@@ -281,11 +272,8 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
 
     @SuppressLint("NewApi")
-    private class AsyncCaller extends AsyncTask<Void, Void, Void> {
-        private double downSpeed = 0.0;
-        private double upSpeed = 0.0;
+    private class AsyncCaller extends BackgroundSpeedTester {
         private Location loc;
-        private WifiInfo wifiInfo;
 
         @Override
         protected void onPreExecute() {
@@ -295,7 +283,6 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         @SuppressLint("MissingPermission")
         @Override
         protected Void doInBackground(Void... params) {
-
 
             try {
                 speedTest();
@@ -314,58 +301,6 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                 downSpeed = 0;
             }
             return null;
-        }
-
-        private void speedTest() {
-            SpeedTestSocket speedTestSocket = new SpeedTestSocket();
-            final SpeedTestResult result = new SpeedTestResult();
-            speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {
-
-                @Override
-                public void onCompletion(SpeedTestReport report) {
-                    // called when download/upload is complete
-                    synchronized (result) {
-                        result.setSpeed(report.getTransferRateBit());
-                        result.setFinish(true);
-                    }
-                    System.out.println("[COMPLETED] rate in octet/s : " + report.getTransferRateOctet());
-                    System.out.println("[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
-
-                }
-
-                @Override
-                public void onError(SpeedTestError speedTestError, String errorMessage) {
-                    synchronized (result) {
-                        result.setSpeed(BigDecimal.ZERO);
-                        result.setFinish(true);
-                    }
-                    // called when a download/upload error occur
-
-                }
-
-                @Override
-                public void onProgress(float percent, SpeedTestReport report) {
-                    // called to notify download/upload progress
-                    System.out.println("[PROGRESS] progress : " + percent + "%");
-                    System.out.println("[PROGRESS] rate in octet/s : " + report.getTransferRateOctet());
-                    System.out.println("[PROGRESS] rate in bit/s   : " + report.getTransferRateBit());
-                }
-            });
-            speedTestSocket.startDownload("http://ipv4.ikoula.testdebit.info/1M.iso");
-            while (!result.isFinish()) {
-                synchronized (result) {
-
-                }
-            }
-            downSpeed = result.getSpeed().doubleValue() / 1024;
-            result.setFinish(false);
-            speedTestSocket.startUpload("http://ipv4.ikoula.testdebit.info/", 1000000);
-            while (!result.isFinish()) {
-                synchronized (result) {
-
-                }
-            }
-            upSpeed = result.getSpeed().doubleValue() / 1024;
         }
 
         @Override
