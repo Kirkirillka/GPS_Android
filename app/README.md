@@ -27,3 +27,27 @@ http://www.ookla.com/support/a21110547/what-is-the-test-flow-and-methodology-for
 https://support.speedtest.net/hc/en-us/articles/203845400-How-does-the-test-itself-work-How-is-the-result-calculated-
 
 
+request:
+```
+{
+  "time": 0,
+  "messageType": "", // "raw", "wifi"
+  "device": {
+    "id": "",
+    "deviceType": ""// "handy","UAV"
+  },
+  "payload": {
+    "infoType": "",
+    "ssid": "",
+    "bssid": "",
+    "signal": {
+      "rssi": 0
+    },
+    "downSpeed": 0.0, // kb/s
+    "upSpeed": 0.0   //kb/s
+  },
+  "longitude": 0.0,
+  "latitude": 0.0
+}
+```
+
