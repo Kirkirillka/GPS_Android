@@ -3,6 +3,9 @@ package de.tu_ilmenau.gpstracker.dbModel;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Coordinate {
+    public Coordinate() {
+    }
+
     @JsonProperty(ClientDeviceMessageFields.LONGITUDE)
     private double longitude;
 

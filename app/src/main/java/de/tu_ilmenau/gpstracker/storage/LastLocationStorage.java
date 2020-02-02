@@ -5,6 +5,7 @@ public class LastLocationStorage {
     private String lattitude;
     private String downSpeed;
     private String upSpeed;
+    private boolean changed;
     private static LastLocationStorage instance;
 
     public static LastLocationStorage getInstance() {
@@ -48,5 +49,13 @@ public class LastLocationStorage {
 
     public void setUpSpeed(String upSpeed) {
         this.upSpeed = upSpeed;
+    }
+
+    public boolean isChanged() {
+        return changed;
+    }
+
+    public void setChanged(boolean changed) {
+        this.changed = changed;
     }
 }

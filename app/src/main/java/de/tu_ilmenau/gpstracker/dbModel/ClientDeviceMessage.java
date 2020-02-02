@@ -1,5 +1,6 @@
 package de.tu_ilmenau.gpstracker.dbModel;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
@@ -7,6 +8,9 @@ public class ClientDeviceMessage extends Coordinate {
 
     @JsonProperty(ClientDeviceMessageFields.TIME)
     private long time;
+
+    public ClientDeviceMessage() {
+    }
 
     private ClientDeviceMessage(Builder builder) {
         setLongitude(builder.longitude);

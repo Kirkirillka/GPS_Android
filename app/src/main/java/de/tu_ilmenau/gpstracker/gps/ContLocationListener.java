@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientWrapper;
+import de.tu_ilmenau.gpstracker.storage.LastLocationStorage;
 
 public class ContLocationListener implements LocationListener {
 
@@ -62,6 +63,14 @@ public class ContLocationListener implements LocationListener {
             try {
                 speedTest();
 //                downSpeed = SpeedTester.test();
+                LastLocationStorage instance = LastLocationStorage.getInstance();
+                synchronized (instance) {
+                    instance.setDownSpeed(downSpeed + "");
+                    instance.setUpSpeed(upSpeed + "");
+                    instance.setLattitude(loc.getLatitude() + "");
+                    instance.setLongitude(loc.getLongitude() + "");
+                    instance.setChanged(true);
+                }
                 wifiInfo = wifiManager.getConnectionInfo();
                 clientWrapper.publish(MessageBuilder.buildMessage(loc, wifiInfo, deviceId, downSpeed, upSpeed));
             } catch (Exception e) {

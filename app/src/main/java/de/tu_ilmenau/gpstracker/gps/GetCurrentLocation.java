@@ -49,6 +49,7 @@ import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientService;
 import de.tu_ilmenau.gpstracker.mqtt.MqttClientWrapper;
+import de.tu_ilmenau.gpstracker.storage.LastLocationStorage;
 
 public class GetCurrentLocation extends Activity implements OnClickListener {
 
@@ -209,6 +210,17 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     private class MyLocationListener implements LocationListener {
         @Override
         public void onLocationChanged(Location loc) {
+            LastLocationStorage instance = LastLocationStorage.getInstance();
+            synchronized (instance) {
+                if (instance.isChanged()) {
+                    xLocation.setText(instance.getLattitude());
+                    yLocation.setText(instance.getLongitude());
+                    downSpeedText.setText(String.format("Down speed: %s Kps", instance.getDownSpeed()));
+                    upSpeedText.setText(String.format("Up speed: %s Kps", instance.getUpSpeed()));
+                    instance.setChanged(false);
+                }
+            }
+
            /* xLocation.setText("");
             yLocation.setText("");
 //            pb.setVisibility(View.INVISIBLE);
@@ -313,7 +325,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                 return;
             }
             downSpeedText.setText(String.format("Down speed: %s Kps", this.downSpeed));
-            downSpeedText.setText(String.format("Up speed: %s Kps", this.upSpeed));
+            upSpeedText.setText(String.format("Up speed: %s Kps", this.upSpeed));
             //this method will be running on UI thread
         }
 
