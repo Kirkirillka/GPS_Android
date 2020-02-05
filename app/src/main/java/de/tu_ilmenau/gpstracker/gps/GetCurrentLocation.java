@@ -351,7 +351,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                     System.out.println("[PROGRESS] rate in bit/s   : " + report.getTransferRateBit());
                 }
             });
-            speedTestSocket.startDownload("http://ipv4.ikoula.testdebit.info/1M.iso");
+            speedTestSocket.startDownload("ftp://speedtest:speedtest@192.168.50.4/1MB.zip");
             while (!result.isFinish()) {
                 synchronized (result) {
 
@@ -359,7 +359,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
             }
             downSpeed = result.getSpeed().doubleValue() / 1024;
             result.setFinish(false);
-            speedTestSocket.startUpload("http://ipv4.ikoula.testdebit.info/", 1000000);
+            speedTestSocket.startUpload("ftp://speedtest:speedtest@192.168.50.4/upload/", 1000000);
             while (!result.isFinish()) {
                 synchronized (result) {
 
