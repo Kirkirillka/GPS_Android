@@ -12,6 +12,7 @@ import fr.bmartel.speedtest.SpeedTestReport;
 import fr.bmartel.speedtest.SpeedTestSocket;
 import fr.bmartel.speedtest.inter.ISpeedTestListener;
 import fr.bmartel.speedtest.model.SpeedTestError;
+import fr.bmartel.speedtest.utils.SpeedTestUtils;
 
 public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
 
@@ -71,7 +72,8 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
         }
         downSpeed = result.getSpeed().doubleValue() / 1024;
         result.setFinish(false);
-        speedTestSocket.startUpload(Config.UPLOAD_URL, 1000000);
+        String fileName = SpeedTestUtils.generateFileName() + ".txt";
+        speedTestSocket.startUpload(Config.UPLOAD_URL + "/" + fileName, 1000000);
         while (!result.isFinish()) {
             synchronized (result) {
 
