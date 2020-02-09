@@ -80,6 +80,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     private TextView yLocation;
     TextView downSpeedText;
     TextView upSpeedText;
+    private TextView deviceIdText;
 
     private EditText ipAddress;
     //    private ProgressBar pb;
@@ -158,15 +159,14 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
     private void pushLocation() {
         //Download your image
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
-            new AsyncCaller().execute();
-        }
+        new AsyncCaller().execute();
     }
 
     /*----Method to Check GPS is enable or disable ----- */
     private Boolean displayGpsStatus() {
         ContentResolver contentResolver = getBaseContext()
                 .getContentResolver();
+        System.out.println(Config.LOC_MANAGER + "------------------------------------------------------------------------------");
         boolean gpsStatus = Settings.Secure
                 .isLocationProviderEnabled(contentResolver,
                         Config.LOC_MANAGER);
@@ -215,8 +215,8 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                 if (instance.isChanged()) {
                     xLocation.setText(instance.getLattitude());
                     yLocation.setText(instance.getLongitude());
-                    downSpeedText.setText(String.format("Down speed: %s Kps", instance.getDownSpeed()));
-                    upSpeedText.setText(String.format("Up speed: %s Kps", instance.getUpSpeed()));
+                    downSpeedText.setText(String.format("Down speed: %s Kbs", instance.getDownSpeed()));
+                    upSpeedText.setText(String.format("Up speed: %s Kbs", instance.getUpSpeed()));
                     instance.setChanged(false);
                 }
             }
@@ -324,8 +324,8 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                 alertbox("Network error", "Network connection is off!");
                 return;
             }
-            downSpeedText.setText(String.format("Down speed: %s Kps", this.downSpeed));
-            upSpeedText.setText(String.format("Up speed: %s Kps", this.upSpeed));
+            downSpeedText.setText(String.format("Down speed: %s Kbs", this.downSpeed));
+            upSpeedText.setText(String.format("Up speed: %s Kbs", this.upSpeed));
             //this method will be running on UI thread
         }
 
@@ -387,7 +387,8 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 //        pb = (ProgressBar) findViewById(R.id.progressBar1);
         ipAddress = (EditText) findViewById(R.id.editIpAddress);
 //        pb.setVisibility(View.INVISIBLE);
-
+        deviceIdText = (TextView) findViewById(R.id.deviceId);
+        deviceIdText.setText(String.format("Device id: %s", deviceId));
         xLocation = (TextView) findViewById(R.id.X);
         yLocation = (TextView) findViewById(R.id.Y);
         downSpeedText = findViewById(R.id.speed);
@@ -424,17 +425,23 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         });
 
         locationListener = new MyLocationListener();
+        if (locationManager.getLastKnownLocation(Config.LOC_MANAGER) == null) {
+            Config.LOC_MANAGER = LocationManager.NETWORK_PROVIDER;
+            if (locationManager.getLastKnownLocation(Config.LOC_MANAGER) == null) {
+                Config.LOC_MANAGER = LocationManager.PASSIVE_PROVIDER;
+            }
+        }
         locationManager.requestLocationUpdates(Config.LOC_MANAGER,
                 2 * 1000, 0.1f, locationListener);
         timeout = (EditText) findViewById(R.id.timeout);
         buffer = new SqliteBuffer(this);
-        if (buffer.getCount() >0) {
+        if (buffer.getCount() > 0) {
             List<BufferValue> all = buffer.getAll();
             BufferValue bufferValue = all.get(all.size() - 1);
             try {
                 ClientDeviceMessage message = new ObjectMapper().readValue(bufferValue.getValue(), ClientDeviceMessage.class);
-                downSpeedText.setText(String.format("Down speed: %s Kps", message.getPayload().getDownSpeed()));
-                downSpeedText.setText(String.format("Up speed: %s Kps", message.getPayload().getUpSpeed()));
+                downSpeedText.setText(String.format("Down speed: %s Kbs", message.getPayload().getDownSpeed()));
+                downSpeedText.setText(String.format("Up speed: %s Kbs", message.getPayload().getUpSpeed()));
                 xLocation.setText(message.getLatitude() + "");
                 yLocation.setText(message.getLongitude() + "");
             } catch (IOException e) {

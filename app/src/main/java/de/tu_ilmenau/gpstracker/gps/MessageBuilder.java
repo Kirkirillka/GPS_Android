@@ -25,7 +25,7 @@ public class MessageBuilder {
         payload.setInfoType("test");
         return new ClientDeviceMessage.Builder().latitude(loc.getLatitude())
                 .longitude(loc.getLongitude()).messageType(ClientDeviceMessage.MessageType.wifi)
-                .time(date.getTime())
+                .time(date)
                 .device(new Device.Builder().deviceType(Device.DeviceType.handy).id(deviceId).build())
                 .payload(payload)
                 .build();

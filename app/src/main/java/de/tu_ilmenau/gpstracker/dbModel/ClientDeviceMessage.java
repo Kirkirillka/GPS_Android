@@ -1,13 +1,14 @@
 package de.tu_ilmenau.gpstracker.dbModel;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Date;
 
 
 public class ClientDeviceMessage extends Coordinate {
 
     @JsonProperty(ClientDeviceMessageFields.TIME)
-    private long time;
+    private Date time;
 
     public ClientDeviceMessage() {
     }
@@ -121,11 +122,11 @@ public class ClientDeviceMessage extends Coordinate {
     }
 
 
-    public long getTime() {
+    public Date getTime() {
         return time;
     }
 
-    public void setTime(long time) {
+    public void setTime(Date time) {
         this.time = time;
     }
 
@@ -156,7 +157,7 @@ public class ClientDeviceMessage extends Coordinate {
     public static final class Builder {
         private double longitude;
         private double latitude;
-        private long time;
+        private Date time;
         private MessageType messageType;
         private Device device;
         private Block payload;
@@ -174,7 +175,7 @@ public class ClientDeviceMessage extends Coordinate {
             return this;
         }
 
-        public Builder time(long val) {
+        public Builder time(Date val) {
             time = val;
             return this;
         }

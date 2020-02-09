@@ -25,10 +25,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 
 import de.tu_ilmenau.gpstracker.database.BufferValue;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
@@ -148,7 +151,9 @@ public class MqttClientWrapper {
         if (!isConnected()) {
             Log.d("MQTT", "connection closed");
         }
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .setDateFormat(new StdDateFormat().withColonInTimeZone(true))
+                .setTimeZone(TimeZone.getDefault());
         String payload = mapper.writeValueAsString(clientMessage);
         byte[] encodedPayload = new byte[0];
         try {
