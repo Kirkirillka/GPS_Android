@@ -70,7 +70,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
 
             }
         }
-        downSpeed = result.getSpeed().doubleValue() / 1024;
+        downSpeed = result.getSpeed().doubleValue() / 1024; // Kbit/s
         result.setFinish(false);
         String fileName = SpeedTestUtils.generateFileName() + ".txt";
         speedTestSocket.startUpload(Config.UPLOAD_URL + "/" + fileName, 1000000);
@@ -79,7 +79,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
 
             }
         }
-        upSpeed = result.getSpeed().doubleValue() / 1024;
+        upSpeed = result.getSpeed().doubleValue() / 1024; //Kbit/s
     }
 
     @Override
