@@ -4,6 +4,9 @@ import android.annotation.SuppressLint;
 import android.net.wifi.WifiInfo;
 import android.os.AsyncTask;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 
 import de.tu_ilmenau.gpstracker.Config;
@@ -15,6 +18,7 @@ import fr.bmartel.speedtest.model.SpeedTestError;
 import fr.bmartel.speedtest.utils.SpeedTestUtils;
 
 public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
+    static Logger LOG = LoggerFactory.getLogger(BackgroundSpeedTester.class);
 
     double downSpeed = 0.0;
     double upSpeed = 0.0;
@@ -44,8 +48,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
                     result.setSpeed(report.getTransferRateBit());
                     result.setFinish(true);
                 }
-                System.out.println("[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
-
+                LOG.info("[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
             }
 
             @Override
@@ -54,6 +57,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
                     result.setSpeed(BigDecimal.ZERO);
                     result.setFinish(true);
                 }
+                LOG.info("[FAILED] load or download: " + errorMessage);
                 // called when a download/upload error occur
 
             }
@@ -61,7 +65,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
             @Override
             public void onProgress(float percent, SpeedTestReport report) {
                 // called to notify download/upload progress
-                System.out.println("[PROGRESS] progress : " + percent + "%");
+                LOG.info("[PROGRESS] progress : " + percent + "%");
             }
         });
         speedTestSocket.startDownload(Config.DOWNLOAD_URL);

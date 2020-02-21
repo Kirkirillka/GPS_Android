@@ -19,6 +19,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -37,8 +39,12 @@ import de.tu_ilmenau.gpstracker.database.BufferValue;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
 
+import static androidx.constraintlayout.widget.Constraints.TAG;
+
 
 public class MqttClientWrapper {
+    private Logger LOG = LoggerFactory.getLogger(MqttClientWrapper.class);
+
     private static Map<String, MqttClientWrapper> connections = new HashMap<>();
 
     private MqttClient client;
@@ -97,7 +103,7 @@ public class MqttClientWrapper {
             @Override
             public void onServiceConnected(ComponentName name, IBinder binder) {
                 connect();
-//                Log.d(LOG_TAG, "onServiceConnected");
+                LOG.debug("onServiceConnected");
             }
 
             @Override
@@ -108,6 +114,7 @@ public class MqttClientWrapper {
                     Toast.makeText(context, "Something went wrong!" + e.getMessage(), Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }//                Log.d(LOG_TAG, "onServiceDisconnected");
+                LOG.debug("onServiceDisconnected");
             }
         };
     }
@@ -149,7 +156,7 @@ public class MqttClientWrapper {
 
     public void publish(ClientDeviceMessage clientMessage) throws JsonProcessingException {
         if (!isConnected()) {
-            Log.d("MQTT", "connection closed");
+            LOG.debug("MQTT", "connection closed");
         }
         ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .setDateFormat(new StdDateFormat().withColonInTimeZone(true))
@@ -165,21 +172,22 @@ public class MqttClientWrapper {
                     MqttMessage message = new MqttMessage(encodedPayload);
                     client.publish(subscriptionTopic, message);
                     ids.add(val.getId());
-                    Log.d("file:  ", payload);
+                    LOG.debug("pushed:  ", payload);
                 }
                 buffer.delete(ids);
             }
             encodedPayload = payload.getBytes("UTF-8");
             MqttMessage message = new MqttMessage(encodedPayload);
             client.publish(subscriptionTopic, message);
-            Log.d("file:  ", payload);
+            LOG.debug("payload:  ", payload);
         } catch (UnsupportedEncodingException | MqttException e) {
+            LOG.error(e.getMessage());
             buffer.insertValue(payload);
             try {
                 client.disconnect();
                 client.connect();
             } catch (MqttException ex) {
-                ex.printStackTrace();
+                LOG.error(ex.getMessage());
             }
         }
     }

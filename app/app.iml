@@ -110,6 +110,7 @@
     <orderEntry type="library" name="Gradle: javax.xml.bind:jaxb-api:2.1@jar" level="project" />
     <orderEntry type="library" name="Gradle: xerces:xercesImpl:2.8.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: fr.bmartel:jspeedtest:1.32.1@jar" level="project" />
+    <orderEntry type="library" name="Gradle: org.slf4j:slf4j-api:1.7.25@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2@jar" level="project" />
     <orderEntry type="library" name="Gradle: androidx.collection:collection:1.0.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: androidx.lifecycle:lifecycle-common:2.0.0@jar" level="project" />
@@ -127,6 +128,7 @@
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-contextmanager:9.2.0@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-fitness:9.2.0@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-location:9.2.0@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.tony19:logback-android:2.0.0@aar" level="project" />
     <orderEntry type="library" name="Gradle: androidx.multidex:multidex:2.0.0@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-ads:9.2.0@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-ads-lite:9.2.0@aar" level="project" />

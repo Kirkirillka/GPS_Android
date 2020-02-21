@@ -6,10 +6,17 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import static androidx.constraintlayout.widget.Constraints.TAG;
+
 public class SqliteBuffer extends SQLiteOpenHelper {
+
+    private Logger LOG = LoggerFactory.getLogger(SQLiteOpenHelper.class);
 
     // Database Version
     private static final int DATABASE_VERSION = 1;
@@ -57,6 +64,7 @@ public class SqliteBuffer extends SQLiteOpenHelper {
         db.close();
 
         // return newly inserted row id
+        LOG.info(String.format("inserted to db: %s", value));
         return id;
     }
 
@@ -86,6 +94,11 @@ public class SqliteBuffer extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(BufferValue.TABLE_NAME, BufferValue.COLUMN_ID + " = ?", ids);
         db.close();
+        String val = "";
+        for (String id: ids) {
+            val += id + ", ";
+        }
+        LOG.info( String.format("deleted ids: %s", val));
     }
 
     public List<BufferValue> getAll() {
@@ -104,13 +117,12 @@ public class SqliteBuffer extends SQLiteOpenHelper {
                 note.setId(cursor.getInt(cursor.getColumnIndex(BufferValue.COLUMN_ID)));
                 note.setValue(cursor.getString(cursor.getColumnIndex(BufferValue.COLUMN_NOTE)));
                 notes.add(note);
+                LOG.info( String.format("readed from db: %s", note.getValue()));
             } while (cursor.moveToNext());
         }
 
-        // close db connection
         db.close();
 
-        // return notes list
         return notes;
     }
 

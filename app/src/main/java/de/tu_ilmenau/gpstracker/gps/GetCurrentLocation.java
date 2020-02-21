@@ -18,7 +18,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
+//import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -36,12 +36,18 @@ import androidx.core.content.ContextCompat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.util.ContextInitializer;
+import ch.qos.logback.core.joran.spi.JoranException;
 import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.R;
 import de.tu_ilmenau.gpstracker.database.BufferValue;
@@ -54,12 +60,15 @@ import de.tu_ilmenau.gpstracker.storage.LastLocationStorage;
 public class GetCurrentLocation extends Activity implements OnClickListener {
 
     private final static int REQUEST_CODE_ASK_PERMISSIONS = 1;
+    private Logger LOG =
+            LoggerFactory.getLogger(GetCurrentLocation.class);
 
     /**
      * Permissions that need to be explicitly requested from end user.
      */
     private static final String[] REQUIRED_SDK_PERMISSIONS = new String[]{
-            Manifest.permission.ACCESS_FINE_LOCATION};
+            Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE};
 
 
     public static final String SERVICE_CLASSNAME = MqttClientService.class.getName();
@@ -97,7 +106,17 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         checkPermissions();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.reset();
+        ContextInitializer ci = new ContextInitializer(loggerContext);
+        try {
+            ci.autoConfig();
+        } catch (JoranException e) {
+            e.printStackTrace();
+        }
+        LOG = LoggerFactory.getLogger(GetCurrentLocation.class);
     }
+
 
     @SuppressLint("MissingPermission")
     public void enableMqtt() {
@@ -141,7 +160,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
             alertbox("MQTT error", "You are not connected to MQTT!");
         }
         if (flag) {
-            Log.v(TAG, "onClick");
+            LOG.info("onClick");
             pushLocation();
         }
     }
@@ -372,6 +391,8 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                 initialize();
                 break;
         }
+
+
     }
 
     @SuppressLint("MissingPermission")

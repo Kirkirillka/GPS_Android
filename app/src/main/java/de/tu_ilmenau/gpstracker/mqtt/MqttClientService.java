@@ -13,6 +13,8 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
@@ -23,6 +25,8 @@ import static com.google.android.gms.plus.PlusOneDummyView.TAG;
 
 @SuppressLint("Registered")
 public class MqttClientService extends Service {
+
+    private Logger LOG = LoggerFactory.getLogger(MqttClientService.class);
 
     private LocationListener locationListener;
     private MqttClientWrapper clientWrapper;
@@ -57,7 +61,7 @@ public class MqttClientService extends Service {
             locationManager.requestLocationUpdates(Config.LOC_MANAGER,
                     timeoutVal * 1000, 0, locationListener);
         } catch (MqttException e) {
-            e.printStackTrace(); //Todo
+            LOG.error(e.getMessage());
         }
         return i;
     }
@@ -70,11 +74,10 @@ public class MqttClientService extends Service {
             try {
                 clientWrapper.disconnect();
             } catch (MqttException e) {
-                e.printStackTrace(); //TODO fixMe
+                LOG.error(e.getMessage());
             }
         }
-        Log.i(TAG, "onCreate() , service stopped...");
-
+        LOG.debug("service stopped...");
     }
 
 }
