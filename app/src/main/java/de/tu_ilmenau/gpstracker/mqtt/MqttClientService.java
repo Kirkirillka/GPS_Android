@@ -16,6 +16,8 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
+
 import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.gps.ContLocationListener;
@@ -60,7 +62,7 @@ public class MqttClientService extends Service {
             locationListener = new ContLocationListener(clientWrapper, deviceId, wifiManager);
             locationManager.requestLocationUpdates(Config.LOC_MANAGER,
                     timeoutVal * 1000, 0, locationListener);
-        } catch (MqttException e) {
+        } catch (Exception e) {
             LOG.error(e.getMessage());
         }
         return i;
@@ -73,11 +75,11 @@ public class MqttClientService extends Service {
         if (clientWrapper != null && clientWrapper.isConnected()) {
             try {
                 clientWrapper.disconnect();
-            } catch (MqttException e) {
+            } catch (Exception e) {
                 LOG.error(e.getMessage());
             }
         }
-        LOG.debug("service stopped...");
+        LOG.info("service stopped..." + new Date());
     }
 
 }

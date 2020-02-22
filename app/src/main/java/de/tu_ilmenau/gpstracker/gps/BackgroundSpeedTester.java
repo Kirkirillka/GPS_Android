@@ -65,9 +65,10 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
             @Override
             public void onProgress(float percent, SpeedTestReport report) {
                 // called to notify download/upload progress
-                LOG.info("[PROGRESS] progress : " + percent + "%");
+                LOG.debug("[PROGRESS] progress : " + percent + "%");
             }
         });
+        LOG.info("download start");
         speedTestSocket.startDownload(Config.DOWNLOAD_URL);
         while (!result.isFinish()) {
             synchronized (result) {
@@ -77,6 +78,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
         downSpeed = result.getSpeed().doubleValue() / 1024; // Kbit/s
         result.setFinish(false);
         String fileName = SpeedTestUtils.generateFileName() + ".txt";
+        LOG.info("upload start");
         speedTestSocket.startUpload(Config.UPLOAD_URL + "/" + fileName, 1000000);
         while (!result.isFinish()) {
             synchronized (result) {

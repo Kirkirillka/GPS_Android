@@ -465,8 +465,8 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                 downSpeedText.setText(String.format("Up speed: %s Kbs", message.getPayload().getUpSpeed()));
                 xLocation.setText(message.getLatitude() + "");
                 yLocation.setText(message.getLongitude() + "");
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                LOG.error(e.getMessage());
             }
         }
     }

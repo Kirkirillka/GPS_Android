@@ -43,7 +43,7 @@ import static androidx.constraintlayout.widget.Constraints.TAG;
 
 
 public class MqttClientWrapper {
-    private Logger LOG = LoggerFactory.getLogger(MqttClientWrapper.class);
+    private static Logger LOG = LoggerFactory.getLogger(MqttClientWrapper.class);
 
     private static Map<String, MqttClientWrapper> connections = new HashMap<>();
 
@@ -72,8 +72,8 @@ public class MqttClientWrapper {
         if (clientWrapper == null) {
             try {
                 clientWrapper = new MqttClientWrapper(context, serverIp, buffer);
-            } catch (MqttException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                LOG.error(e.getMessage());
             }
         } else {
             clientWrapper.setContext(context);
@@ -105,18 +105,18 @@ public class MqttClientWrapper {
             @Override
             public void onServiceConnected(ComponentName name, IBinder binder) {
                 connect();
-                LOG.debug("onServiceConnected");
+                LOG.info("onServiceConnected");
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 try {
                     disconnect();
-                } catch (MqttException e) {
+                } catch (Exception e) {
                     Toast.makeText(context, "Something went wrong!" + e.getMessage(), Toast.LENGTH_LONG).show();
-                    e.printStackTrace();
+                    LOG.error(e.getMessage());
                 }//                Log.d(LOG_TAG, "onServiceDisconnected");
-                LOG.debug("onServiceDisconnected");
+                LOG.info("onServiceDisconnected");
             }
         };
     }
@@ -151,14 +151,14 @@ public class MqttClientWrapper {
                     System.out.println("push good");
                 }
             });
-        } catch (MqttException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
         }
     }
 
     public void publish(ClientDeviceMessage clientMessage) throws JsonProcessingException {
         if (!isConnected()) {
-            LOG.debug("MQTT", "connection closed");
+            LOG.info("MQTT", "connection closed");
         }
         ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .setDateFormat(new StdDateFormat().withColonInTimeZone(true))
@@ -175,7 +175,7 @@ public class MqttClientWrapper {
                     message.setQos(this.QoS);
                     client.publish(subscriptionTopic, message);
                     ids.add(val.getId());
-                    LOG.debug("pushed:  ", payload);
+                    LOG.info("pushed:  " + payload);
                 }
                 buffer.delete(ids);
             }
@@ -183,7 +183,7 @@ public class MqttClientWrapper {
             MqttMessage message = new MqttMessage(encodedPayload);
             client.publish(subscriptionTopic, message);
             message.setQos(this.QoS);
-            LOG.debug("payload:  ", payload);
+            LOG.info("payload:  " + payload);
         } catch (UnsupportedEncodingException | MqttException e) {
             LOG.error(e.getMessage());
             buffer.insertValue(payload);
