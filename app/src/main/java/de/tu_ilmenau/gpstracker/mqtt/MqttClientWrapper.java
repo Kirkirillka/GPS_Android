@@ -56,6 +56,8 @@ public class MqttClientWrapper {
     final String port = "1883";
     final String protocol = "tcp";
 
+    final int QoS = 2;
+
     final String clientId = "Test";
     final String subscriptionTopic = "/messages/";
 
@@ -170,6 +172,7 @@ public class MqttClientWrapper {
                 for (BufferValue val : all) {
                     encodedPayload = val.getValue().getBytes("UTF-8");
                     MqttMessage message = new MqttMessage(encodedPayload);
+                    message.setQos(this.QoS);
                     client.publish(subscriptionTopic, message);
                     ids.add(val.getId());
                     LOG.debug("pushed:  ", payload);
@@ -179,6 +182,7 @@ public class MqttClientWrapper {
             encodedPayload = payload.getBytes("UTF-8");
             MqttMessage message = new MqttMessage(encodedPayload);
             client.publish(subscriptionTopic, message);
+            message.setQos(this.QoS);
             LOG.debug("payload:  ", payload);
         } catch (UnsupportedEncodingException | MqttException e) {
             LOG.error(e.getMessage());
