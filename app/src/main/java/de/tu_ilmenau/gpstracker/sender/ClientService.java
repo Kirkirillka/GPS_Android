@@ -1,4 +1,4 @@
-package de.tu_ilmenau.gpstracker.mqtt;
+package de.tu_ilmenau.gpstracker.sender;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -8,11 +8,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,20 +20,18 @@ import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.gps.ContLocationListener;
 
-import static com.google.android.gms.plus.PlusOneDummyView.TAG;
-
 
 @SuppressLint("Registered")
-public class MqttClientService extends Service {
+public class ClientService extends Service {
 
-    private Logger LOG = LoggerFactory.getLogger(MqttClientService.class);
+    private Logger LOG = LoggerFactory.getLogger(ClientService.class);
 
     private LocationListener locationListener;
-    private MqttClientWrapper clientWrapper;
+    private ClientWrapper clientWrapper;
     private LocationManager locationManager;
     private SqliteBuffer buffer;
 
-    public MqttClientService() {
+    public ClientService() {
         super();
     }
 
@@ -52,7 +48,7 @@ public class MqttClientService extends Service {
         String ip = intent.getStringExtra("IP");
         try {
             buffer = new SqliteBuffer(this);
-            clientWrapper = new MqttClientWrapper(getApplicationContext(), ip, buffer);
+            clientWrapper = new ClientWrapper(getApplicationContext(), ip, buffer);
             clientWrapper.connect();
             int timeoutVal = intent.getIntExtra("timeout", 0);
             String deviceId = intent.getStringExtra("device");

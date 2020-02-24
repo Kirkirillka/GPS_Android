@@ -8,17 +8,17 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 
-import de.tu_ilmenau.gpstracker.mqtt.MqttClientWrapper;
+import de.tu_ilmenau.gpstracker.sender.ClientWrapper;
 import de.tu_ilmenau.gpstracker.storage.LastLocationStorage;
 
 public class ContLocationListener implements LocationListener {
 
-    private MqttClientWrapper clientWrapper;
+    private ClientWrapper clientWrapper;
     private String deviceId;
     private WifiManager wifiManager;
     private Location loc;
 
-    public ContLocationListener(MqttClientWrapper clientWrapper, String deviceId, WifiManager wifiManager) {
+    public ContLocationListener(ClientWrapper clientWrapper, String deviceId, WifiManager wifiManager) {
         this.wifiManager = wifiManager;
         this.clientWrapper = clientWrapper;
         this.deviceId = deviceId;
@@ -62,12 +62,11 @@ public class ContLocationListener implements LocationListener {
 
             try {
                 speedTest();
-//                downSpeed = SpeedTester.test();
                 LastLocationStorage instance = LastLocationStorage.getInstance();
                 synchronized (instance) {
                     instance.setDownSpeed(downSpeed + "");
                     instance.setUpSpeed(upSpeed + "");
-                    instance.setLattitude(loc.getLatitude() + "");
+                    instance.setLatitude(loc.getLatitude() + "");
                     instance.setLongitude(loc.getLongitude() + "");
                     instance.setChanged(true);
                 }

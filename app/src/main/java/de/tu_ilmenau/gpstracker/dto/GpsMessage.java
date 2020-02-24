@@ -4,7 +4,7 @@ public class GpsMessage {
     //TODO get it from db module
     private String data;
     private long longitude;
-    private long latitute;
+    private long latitude;
     private String deviceId;
 
 

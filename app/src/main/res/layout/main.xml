@@ -125,7 +125,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
                 android:layout_weight="1"
-                android:text="MQTT IP address:"
+                android:text="Server IP address:"
                 android:textColor="#000000"
                 android:textSize="27dp" />
 

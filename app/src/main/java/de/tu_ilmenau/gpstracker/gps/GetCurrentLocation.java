@@ -39,7 +39,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,8 +52,8 @@ import de.tu_ilmenau.gpstracker.R;
 import de.tu_ilmenau.gpstracker.database.BufferValue;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
-import de.tu_ilmenau.gpstracker.mqtt.MqttClientService;
-import de.tu_ilmenau.gpstracker.mqtt.MqttClientWrapper;
+import de.tu_ilmenau.gpstracker.sender.ClientService;
+import de.tu_ilmenau.gpstracker.sender.ClientWrapper;
 import de.tu_ilmenau.gpstracker.storage.LastLocationStorage;
 
 public class GetCurrentLocation extends Activity implements OnClickListener {
@@ -71,7 +70,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
             Manifest.permission.READ_EXTERNAL_STORAGE};
 
 
-    public static final String SERVICE_CLASSNAME = MqttClientService.class.getName();
+    public static final String SERVICE_CLASSNAME = ClientService.class.getName();
     static private final String IPV4_REGEX = "(([0-1]?[0-9]{1,2}\\.)|(2[0-4][0-9]\\.)|(25[0-5]\\.)){3}(([0-1]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))";
     static private Pattern IPV4_PATTERN = Pattern.compile(IPV4_REGEX);
 
@@ -84,7 +83,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     private Button pushManually;
     private Button resetTime;
     private Switch pushContinuously;
-    private Switch pushHttp;
+    private Switch checkbox_http_use;
     private EditText timeout;
     private TextView xLocation;
     private TextView yLocation;
@@ -95,12 +94,12 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     private EditText ipAddress;
     //    private ProgressBar pb;
     private String deviceId;
-    private MqttClientWrapper clientWrapper;
-    private Boolean flag = false;
-    private boolean enableMqtt = false;
+    private ClientWrapper clientWrapper;
+    private Boolean gps_enabled = false;
+    private boolean mqtt_used = false;
     private String ipAdd;
     private SqliteBuffer buffer;
-    private boolean httpPostReq;
+    private boolean http_used = false;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -120,13 +119,16 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
 
     @SuppressLint("MissingPermission")
-    public void enableMqtt() {
+    public void enableClient() {
         ipAdd = ipAddress.getText().toString();
         if (!ipAdd.isEmpty() && isValidIPV4(ipAdd)) { //todo !isEmpty()
-            clientWrapper = MqttClientWrapper.getInstance(getApplicationContext(), ipAdd, buffer);
-            clientWrapper.setHttpSender(httpPostReq);
+            clientWrapper = ClientWrapper.getInstance(getApplicationContext(), ipAdd, buffer);
+            clientWrapper.setHttpSender(http_used);
             clientWrapper.connect();
-            enableMqtt = true;
+
+            if (!http_used){
+                mqtt_used = true;
+            };
         } else {
             alertbox("Broker address", "Broker IP is not correct!");
         }
@@ -141,7 +143,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btnLocation:
-                enableMqtt();
+                enableClient();
                 break;
             case R.id.pushManually:
                 pushManually();
@@ -154,15 +156,15 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     }
 
     private void pushManually() {
-        flag = displayGpsStatus();
-        if (!flag) {
+        gps_enabled = displayGpsStatus();
+        if (!gps_enabled) {
             alertbox("GPS Status", "Your GPS is off!");
         }
-        if (!enableMqtt) {
+        if (!mqtt_used) {
             alertbox("MQTT error", "You are not connected to MQTT!");
         }
-        if (flag) {
-            LOG.info("onClick");
+        if (gps_enabled) {
+            LOG.info("Sending a message manually");
             pushLocation();
         }
     }
@@ -180,14 +182,15 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
     private void pushLocation() {
         //Download your image
-        new AsyncCaller().execute();
+        new BackgroundSpeedTesterAsyncCaller().execute();
     }
 
     /*----Method to Check GPS is enable or disable ----- */
     private Boolean displayGpsStatus() {
         ContentResolver contentResolver = getBaseContext()
                 .getContentResolver();
-        System.out.println(Config.LOC_MANAGER + "------------------------------------------------------------------------------");
+        LOG.debug(Config.LOC_MANAGER + "------------------------------------------------------------------------------");
+
         boolean gpsStatus = Settings.Secure
                 .isLocationProviderEnabled(contentResolver,
                         Config.LOC_MANAGER);
@@ -234,7 +237,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
             LastLocationStorage instance = LastLocationStorage.getInstance();
             synchronized (instance) {
                 if (instance.isChanged()) {
-                    xLocation.setText(instance.getLattitude());
+                    xLocation.setText(instance.getLatitude());
                     yLocation.setText(instance.getLongitude());
                     downSpeedText.setText(String.format("Down speed: %s Kbs", instance.getDownSpeed()));
                     upSpeedText.setText(String.format("Up speed: %s Kbs", instance.getUpSpeed()));
@@ -277,7 +280,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
     private void startService(int timeoutVal) {
 
-        final Intent intent = new Intent(this, MqttClientService.class);
+        final Intent intent = new Intent(this, ClientService.class);
         intent.putExtra("IP", ipAdd);
         intent.getStringExtra("IP");
         intent.putExtra("device", deviceId);
@@ -288,7 +291,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
     private void stopService() {
 
-        final Intent intent = new Intent(this, MqttClientService.class);
+        final Intent intent = new Intent(this, ClientService.class);
         stopService(intent);
     }
 
@@ -305,7 +308,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
 
     @SuppressLint("NewApi")
-    private class AsyncCaller extends BackgroundSpeedTester {
+    private class BackgroundSpeedTesterAsyncCaller extends BackgroundSpeedTester {
         private Location loc;
 
         @Override
@@ -319,12 +322,11 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
             try {
                 speedTest();
-//                speed = SpeedTester.test();
                 loc = locationManager.getLastKnownLocation(Config.LOC_MANAGER);
                 WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                 wifiInfo = wifiManager.getConnectionInfo();
                 ClientDeviceMessage message = MessageBuilder.buildMessage(loc, wifiInfo, deviceId, downSpeed, upSpeed);
-                if (enableMqtt) {
+                if (mqtt_used) {
                     clientWrapper.publish(message);
                 } else {
                     bufferLocation(message);
@@ -424,7 +426,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         resetTime = (Button) findViewById(R.id.resetTime);
         resetTime.setOnClickListener(this);
         pushContinuously = (Switch) findViewById(R.id.pushContinuously);
-        pushHttp = (Switch) findViewById(R.id.pushHttp);
+        checkbox_http_use = (Switch) findViewById(R.id.pushHttp);
         locationManager = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
         pushContinuously.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -448,11 +450,11 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
             }
         });
 
-        pushHttp.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        checkbox_http_use.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                httpPostReq = isChecked;
+                http_used = isChecked;
                 if (clientWrapper != null) {
-                    clientWrapper.setHttpSender(isChecked);
+                    clientWrapper.setHttpSender(http_used);
                 }
             }
         });

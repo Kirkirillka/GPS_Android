@@ -1,4 +1,4 @@
-package de.tu_ilmenau.gpstracker.mqtt;
+package de.tu_ilmenau.gpstracker.sender;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -24,10 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,13 +43,11 @@ import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
 import fr.bmartel.protocol.http.constants.HttpMethod;
 
-import static androidx.constraintlayout.widget.Constraints.TAG;
 
+public class ClientWrapper {
+    private static Logger LOG = LoggerFactory.getLogger(ClientWrapper.class);
 
-public class MqttClientWrapper {
-    private static Logger LOG = LoggerFactory.getLogger(MqttClientWrapper.class);
-
-    private static Map<String, MqttClientWrapper> connections = new HashMap<>();
+    private static Map<String, ClientWrapper> connections = new HashMap<>();
 
     private MqttClient client;
     Context context;
@@ -75,12 +69,12 @@ public class MqttClientWrapper {
 
     protected ServiceConnection serverConn;
 
-    public static MqttClientWrapper getInstance(Context context, String serverIp, SqliteBuffer buffer
+    public static ClientWrapper getInstance(Context context, String serverIp, SqliteBuffer buffer
     ) {
-        MqttClientWrapper clientWrapper = connections.get(serverIp);
+        ClientWrapper clientWrapper = connections.get(serverIp);
         if (clientWrapper == null) {
             try {
-                clientWrapper = new MqttClientWrapper(context, serverIp, buffer);
+                clientWrapper = new ClientWrapper(context, serverIp, buffer);
             } catch (Exception e) {
                 LOG.error(e.getMessage());
             }
@@ -102,7 +96,7 @@ public class MqttClientWrapper {
         this.context = context;
     }
 
-    public MqttClientWrapper(Context context, String serverIp, SqliteBuffer buffer) throws MqttException {
+    public ClientWrapper(Context context, String serverIp, SqliteBuffer buffer) throws MqttException {
         this.context = context;
         this.buffer = buffer;
         this.serverIp = serverIp;
@@ -141,31 +135,38 @@ public class MqttClientWrapper {
     }
 
     public void connect() {
-        MqttConnectOptions options = new MqttConnectOptions();
-        options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1);
-        options.setCleanSession(false);
-        options.setUserName(username);
-        options.setPassword(password.toCharArray());
-        try {
-            client.connect(options);
-            client.setCallback(new MqttCallback() {
-                @Override
-                public void connectionLost(Throwable cause) {
-                    cause.printStackTrace();
-                }
 
-                @Override
-                public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    System.out.println("read good");
-                }
+        if (httpSender) {
+            LOG.debug("Try to connect to HTTP server");
 
-                @Override
-                public void deliveryComplete(IMqttDeliveryToken token) {
-                    System.out.println("push good");
-                }
-            });
-        } catch (Exception e) {
-            LOG.error(e.getMessage());
+        } else {
+
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1);
+            options.setCleanSession(false);
+            options.setUserName(username);
+            options.setPassword(password.toCharArray());
+            try {
+                client.connect(options);
+                client.setCallback(new MqttCallback() {
+                    @Override
+                    public void connectionLost(Throwable cause) {
+                        cause.printStackTrace();
+                    }
+
+                    @Override
+                    public void messageArrived(String topic, MqttMessage message) throws Exception {
+                        System.out.println("read good");
+                    }
+
+                    @Override
+                    public void deliveryComplete(IMqttDeliveryToken token) {
+                        System.out.println("push good");
+                    }
+                });
+            } catch (Exception e) {
+                LOG.error(e.getMessage());
+            }
         }
     }
 
@@ -209,6 +210,8 @@ public class MqttClientWrapper {
             HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
             httpCon.setDoOutput(true);
             httpCon.setRequestMethod(HttpMethod.POST_REQUEST);
+            httpCon.setRequestProperty("Content-Type", "application/json");
+            httpCon.setRequestProperty("Accept", "application/json");
             OutputStreamWriter out = new OutputStreamWriter(
                     httpCon.getOutputStream());
             out.write(payload);
