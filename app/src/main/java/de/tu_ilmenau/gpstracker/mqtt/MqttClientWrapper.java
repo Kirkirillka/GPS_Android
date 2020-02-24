@@ -22,7 +22,13 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,9 +41,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
+import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.database.BufferValue;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
+import fr.bmartel.protocol.http.constants.HttpMethod;
 
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
@@ -50,6 +58,7 @@ public class MqttClientWrapper {
     private MqttClient client;
     Context context;
     private SqliteBuffer buffer;
+    private boolean httpSender;
 
 
     String serverIp = "10.48.226.193";//TODO add ip address and port
@@ -79,6 +88,10 @@ public class MqttClientWrapper {
             clientWrapper.setContext(context);
         }
         return clientWrapper;
+    }
+
+    public void setHttpSender(boolean httpSender) {
+        this.httpSender = httpSender;
     }
 
     public Context getContext() {
@@ -164,27 +177,21 @@ public class MqttClientWrapper {
                 .setDateFormat(new StdDateFormat().withColonInTimeZone(true))
                 .setTimeZone(TimeZone.getDefault());
         String payload = mapper.writeValueAsString(clientMessage);
-        byte[] encodedPayload = new byte[0];
+
         try {
             if (buffer.getCount() > 0) {
                 List<BufferValue> all = buffer.getAll();
                 List<Integer> ids = new ArrayList<>(all.size());
                 for (BufferValue val : all) {
-                    encodedPayload = val.getValue().getBytes("UTF-8");
-                    MqttMessage message = new MqttMessage(encodedPayload);
-                    message.setQos(this.QoS);
-                    client.publish(subscriptionTopic, message);
+                    internalPublish(val.getValue());
                     ids.add(val.getId());
                     LOG.info("pushed:  " + payload);
                 }
                 buffer.delete(ids);
             }
-            encodedPayload = payload.getBytes("UTF-8");
-            MqttMessage message = new MqttMessage(encodedPayload);
-            client.publish(subscriptionTopic, message);
-            message.setQos(this.QoS);
+            internalPublish(payload);
             LOG.info("payload:  " + payload);
-        } catch (UnsupportedEncodingException | MqttException e) {
+        } catch (Exception e) {
             LOG.error(e.getMessage());
             buffer.insertValue(payload);
             try {
@@ -193,6 +200,26 @@ public class MqttClientWrapper {
             } catch (MqttException ex) {
                 LOG.error(ex.getMessage());
             }
+        }
+    }
+
+    private void internalPublish(String payload) throws IOException, MqttException {
+        if (httpSender) {
+            URL url = new URL(this.serverIp + Config.HTTP_POST_URL);
+            HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
+            httpCon.setDoOutput(true);
+            httpCon.setRequestMethod(HttpMethod.POST_REQUEST);
+            OutputStreamWriter out = new OutputStreamWriter(
+                    httpCon.getOutputStream());
+            out.write(payload);
+            out.close();
+            httpCon.getInputStream();
+        } else {
+            byte[] encodedPayload = new byte[0];
+            encodedPayload = payload.getBytes("UTF-8");
+            MqttMessage message = new MqttMessage(encodedPayload);
+            message.setQos(this.QoS);
+            client.publish(subscriptionTopic, message);
         }
     }
 

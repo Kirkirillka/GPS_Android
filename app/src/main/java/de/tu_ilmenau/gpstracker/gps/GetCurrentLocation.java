@@ -84,6 +84,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     private Button pushManually;
     private Button resetTime;
     private Switch pushContinuously;
+    private Switch pushHttp;
     private EditText timeout;
     private TextView xLocation;
     private TextView yLocation;
@@ -95,11 +96,11 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     //    private ProgressBar pb;
     private String deviceId;
     private MqttClientWrapper clientWrapper;
-    private static final String TAG = "Debug";
     private Boolean flag = false;
     private boolean enableMqtt = false;
     private String ipAdd;
     private SqliteBuffer buffer;
+    private boolean httpPostReq;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -123,6 +124,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         ipAdd = ipAddress.getText().toString();
         if (!ipAdd.isEmpty() && isValidIPV4(ipAdd)) { //todo !isEmpty()
             clientWrapper = MqttClientWrapper.getInstance(getApplicationContext(), ipAdd, buffer);
+            clientWrapper.setHttpSender(httpPostReq);
             clientWrapper.connect();
             enableMqtt = true;
         } else {
@@ -422,6 +424,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         resetTime = (Button) findViewById(R.id.resetTime);
         resetTime.setOnClickListener(this);
         pushContinuously = (Switch) findViewById(R.id.pushContinuously);
+        pushHttp = (Switch) findViewById(R.id.pushHttp);
         locationManager = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
         pushContinuously.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -442,6 +445,15 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
                     }
                 }
 
+            }
+        });
+
+        pushHttp.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                httpPostReq = isChecked;
+                if (clientWrapper != null) {
+                    clientWrapper.setHttpSender(isChecked);
+                }
             }
         });
 

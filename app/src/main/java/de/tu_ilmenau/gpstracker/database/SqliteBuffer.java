@@ -76,9 +76,13 @@ public class SqliteBuffer extends SQLiteOpenHelper {
     }
 
     public void delete(List<Integer> ids) {
-        String[] buffer = new String[ids.size()];
-        String[] strings = ids.toArray(buffer);
-        deleteChunk(strings);
+        final String[] buffer = new String[ids.size()];
+        int i = 0;
+        for (Integer id : ids) {
+            buffer[i] = String.valueOf(id);
+            i++;
+        }
+        deleteChunk(buffer);
 //        int bufferSize = 0;
 //        for (Integer id : ids) {
 //            buffer[bufferSize] = String.valueOf(id);
