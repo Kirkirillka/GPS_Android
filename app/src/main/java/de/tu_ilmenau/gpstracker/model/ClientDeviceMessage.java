@@ -1,4 +1,4 @@
-package de.tu_ilmenau.gpstracker.dbModel;
+package de.tu_ilmenau.gpstracker.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

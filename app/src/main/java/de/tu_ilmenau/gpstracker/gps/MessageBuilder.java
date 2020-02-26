@@ -5,8 +5,8 @@ import android.net.wifi.WifiInfo;
 
 import java.util.Date;
 
-import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
-import de.tu_ilmenau.gpstracker.dbModel.Device;
+import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
+import de.tu_ilmenau.gpstracker.model.Device;
 
 public class MessageBuilder {
 

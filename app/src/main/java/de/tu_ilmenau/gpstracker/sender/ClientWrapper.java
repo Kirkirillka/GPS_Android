@@ -40,7 +40,7 @@ import com.fasterxml.jackson.databind.util.StdDateFormat;
 import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.database.BufferValue;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
-import de.tu_ilmenau.gpstracker.dbModel.ClientDeviceMessage;
+import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
 import fr.bmartel.protocol.http.constants.HttpMethod;
 
 
