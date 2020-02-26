@@ -1,4 +1,4 @@
-package de.tu_ilmenau.gpstracker.model;
+package de.tu_ilmenau.gpstracker.utils;
 
 public class ClientDeviceMessageFields {
     public static final String TABLENAME = "data";

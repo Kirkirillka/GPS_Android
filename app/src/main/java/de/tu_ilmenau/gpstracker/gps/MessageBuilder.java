@@ -7,18 +7,19 @@ import java.util.Date;
 
 import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
 import de.tu_ilmenau.gpstracker.model.Device;
+import de.tu_ilmenau.gpstracker.model.SpeedTestTotalResult;
 
 public class MessageBuilder {
 
-    public static ClientDeviceMessage buildMessage(Location loc, WifiInfo wifiInfo, String deviceId, double speed, double upSpeed) {
+    public static ClientDeviceMessage buildMessage(Location loc, WifiInfo wifiInfo, String deviceId, SpeedTestTotalResult totalResult) {
 //        GregorianCalendar cal = new GregorianCalendar();
         Date date = new Date();
 //        cal.setTime(date);
         ClientDeviceMessage.Block payload = new ClientDeviceMessage.Block();
         payload.setBssid(wifiInfo.getBSSID());
         payload.setSsid(wifiInfo.getSSID());
-        payload.setDownSpeed(speed);
-        payload.setUpSpeed(upSpeed);
+        payload.setDownSpeed(totalResult.getDownSpeed());
+        payload.setUpSpeed(totalResult.getUpSpeed());
         ClientDeviceMessage.Block.Signal signal = new ClientDeviceMessage.Block.Signal();
         signal.setRssi(wifiInfo.getRssi());
         payload.setSignal(signal);

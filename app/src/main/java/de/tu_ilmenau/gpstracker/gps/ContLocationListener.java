@@ -8,19 +8,22 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 
+import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
 import de.tu_ilmenau.gpstracker.sender.ClientWrapper;
+import de.tu_ilmenau.gpstracker.sender.HttpPostSender;
+import de.tu_ilmenau.gpstracker.sender.Sender;
 import de.tu_ilmenau.gpstracker.storage.LastLocationStorage;
 
 public class ContLocationListener implements LocationListener {
 
-    private ClientWrapper clientWrapper;
+    private Sender sender;
     private String deviceId;
     private WifiManager wifiManager;
     private Location loc;
 
-    public ContLocationListener(ClientWrapper clientWrapper, String deviceId, WifiManager wifiManager) {
+    public ContLocationListener(Sender sender, String deviceId, WifiManager wifiManager) {
         this.wifiManager = wifiManager;
-        this.clientWrapper = clientWrapper;
+        this.sender = sender;
         this.deviceId = deviceId;
     }
 
@@ -62,19 +65,11 @@ public class ContLocationListener implements LocationListener {
 
             try {
                 speedTest();
-                LastLocationStorage instance = LastLocationStorage.getInstance();
-                synchronized (instance) {
-                    instance.setDownSpeed(downSpeed + "");
-                    instance.setUpSpeed(upSpeed + "");
-                    instance.setLatitude(loc.getLatitude() + "");
-                    instance.setLongitude(loc.getLongitude() + "");
-                    instance.setChanged(true);
-                }
                 wifiInfo = wifiManager.getConnectionInfo();
-                clientWrapper.publish(MessageBuilder.buildMessage(loc, wifiInfo, deviceId, downSpeed, upSpeed));
+                ClientDeviceMessage clientDeviceMessage = MessageBuilder.buildMessage(loc, wifiInfo, deviceId, totalResult);
+                sender.publish(clientDeviceMessage);
             } catch (Exception e) {
                 LOG.error(e.getMessage());
-                downSpeed = 0;
             }
             return null;
         }

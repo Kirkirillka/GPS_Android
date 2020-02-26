@@ -12,16 +12,19 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import static androidx.constraintlayout.widget.Constraints.TAG;
+import de.tu_ilmenau.gpstracker.model.BufferValue;
 
+/**
+ * This class realize connection to local SQlite database storage as buffer
+ */
 public class SqliteBuffer extends SQLiteOpenHelper {
 
     private Logger LOG = LoggerFactory.getLogger(SQLiteOpenHelper.class);
 
-    // Database Version
+    /* Database Version */
     private static final int DATABASE_VERSION = 1;
 
-    // Database Name
+    /* Database Name */
     private static final String DATABASE_NAME = "notes_db";
 
 
@@ -29,15 +32,11 @@ public class SqliteBuffer extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
-    // Creating Tables
     @Override
     public void onCreate(SQLiteDatabase db) {
-
-        // create notes table
         db.execSQL(BufferValue.CREATE_TABLE);
     }
 
-    // Upgrading database
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if existed
@@ -83,17 +82,6 @@ public class SqliteBuffer extends SQLiteOpenHelper {
             i++;
         }
         deleteChunk(buffer);
-//        int bufferSize = 0;
-//        for (Integer id : ids) {
-//            buffer[bufferSize] = String.valueOf(id);
-//            bufferSize++;
-//            if (bufferSize == 100) {
-//                deleteChunk(buffer);
-//                bufferSize = 0;
-//                buffer = new String[100];
-//            }
-//
-//        }
     }
 
     public void deleteChunk(String[] ids) {
@@ -101,10 +89,10 @@ public class SqliteBuffer extends SQLiteOpenHelper {
         db.delete(BufferValue.TABLE_NAME, BufferValue.COLUMN_ID + " = ?", ids);
         db.close();
         String val = "";
-        for (String id: ids) {
+        for (String id : ids) {
             val += id + ", ";
         }
-        LOG.info( String.format("deleted ids: %s", val));
+        LOG.info(String.format("deleted ids: %s", val));
     }
 
     public List<BufferValue> getAll() {
@@ -123,7 +111,7 @@ public class SqliteBuffer extends SQLiteOpenHelper {
                 note.setId(cursor.getInt(cursor.getColumnIndex(BufferValue.COLUMN_ID)));
                 note.setValue(cursor.getString(cursor.getColumnIndex(BufferValue.COLUMN_NOTE)));
                 notes.add(note);
-                LOG.info( String.format("readed from db: %s", note.getValue()));
+                LOG.info(String.format("readed from db: %s", note.getValue()));
             } while (cursor.moveToNext());
         }
 
@@ -136,12 +124,8 @@ public class SqliteBuffer extends SQLiteOpenHelper {
         String countQuery = "SELECT  * FROM " + BufferValue.TABLE_NAME;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
-
         int count = cursor.getCount();
         cursor.close();
-
-
-        // return count
         return count;
     }
 }

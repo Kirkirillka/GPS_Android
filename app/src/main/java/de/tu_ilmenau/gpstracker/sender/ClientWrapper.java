@@ -38,13 +38,13 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
 import de.tu_ilmenau.gpstracker.Config;
-import de.tu_ilmenau.gpstracker.database.BufferValue;
+import de.tu_ilmenau.gpstracker.model.BufferValue;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
 import fr.bmartel.protocol.http.constants.HttpMethod;
 
 
-public class ClientWrapper {
+public class ClientWrapper implements Sender {
     private static Logger LOG = LoggerFactory.getLogger(ClientWrapper.class);
 
     private static Map<String, ClientWrapper> connections = new HashMap<>();

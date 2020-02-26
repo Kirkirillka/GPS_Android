@@ -1,8 +1,11 @@
-package de.tu_ilmenau.gpstracker;
+package de.tu_ilmenau.gpstracker.model;
 
 import java.math.BigDecimal;
 
-public class SpeedTestResult {
+/**
+ * This class contains speed test result
+ */
+public class SpeedTestTempResult {
     private boolean finish;
     private BigDecimal speed;
 

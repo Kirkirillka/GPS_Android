@@ -4,7 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
 
+import de.tu_ilmenau.gpstracker.utils.ClientDeviceMessageFields;
 
+/**
+ * This is main message which contains coordinates, payload, connection
+ * upstream and downstream speed, wifi connection properties
+ */
 public class ClientDeviceMessage extends Coordinate {
 
     @JsonProperty(ClientDeviceMessageFields.TIME)
@@ -26,7 +31,6 @@ public class ClientDeviceMessage extends Coordinate {
         raw,
         wifi
     }
-
     @JsonProperty("message_type")
     private MessageType messageType;
 

@@ -1,14 +1,14 @@
-package de.tu_ilmenau.gpstracker.database;
+package de.tu_ilmenau.gpstracker.model;
 
+/**
+ * This class contains data to retrieve and load to Sqlite database
+ */
 public class BufferValue {
     public static final String TABLE_NAME = "buffer";
-
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_NOTE = "value";
-
     private int id;
     private String value;
-
 
     // Create table SQL query
     public static final String CREATE_TABLE =

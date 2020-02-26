@@ -2,6 +2,11 @@ package de.tu_ilmenau.gpstracker.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.tu_ilmenau.gpstracker.utils.ClientDeviceMessageFields;
+
+/**
+ * This is message class which contains coordinates
+ */
 public class Coordinate {
     public Coordinate() {
     }

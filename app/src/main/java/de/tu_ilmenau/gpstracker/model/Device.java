@@ -2,6 +2,9 @@ package de.tu_ilmenau.gpstracker.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * This class contains device data such as id of device, device type
+ */
 public class Device {
 
     @JsonProperty("id")

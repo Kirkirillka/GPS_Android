@@ -10,7 +10,8 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 
 import de.tu_ilmenau.gpstracker.Config;
-import de.tu_ilmenau.gpstracker.SpeedTestResult;
+import de.tu_ilmenau.gpstracker.model.SpeedTestTempResult;
+import de.tu_ilmenau.gpstracker.model.SpeedTestTotalResult;
 import fr.bmartel.speedtest.SpeedTestReport;
 import fr.bmartel.speedtest.SpeedTestSocket;
 import fr.bmartel.speedtest.inter.ISpeedTestListener;
@@ -19,10 +20,10 @@ import fr.bmartel.speedtest.utils.SpeedTestUtils;
 
 public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
     static Logger LOG = LoggerFactory.getLogger(BackgroundSpeedTester.class);
-
+    protected SpeedTestTotalResult totalResult = new SpeedTestTotalResult();
     double downSpeed = 0.0;
     double upSpeed = 0.0;
-    WifiInfo wifiInfo;
+    protected WifiInfo wifiInfo;
 
     @Override
     protected void onPreExecute() {
@@ -38,7 +39,8 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
 
     protected void speedTest() {
         SpeedTestSocket speedTestSocket = new SpeedTestSocket();
-        final SpeedTestResult result = new SpeedTestResult();
+        final SpeedTestTempResult result = new SpeedTestTempResult();
+        totalResult = new SpeedTestTotalResult();
         speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {
 
             @Override
@@ -69,13 +71,14 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
             }
         });
         LOG.info("download start");
+        speedTestSocket.setSocketTimeout(5 * 1000);
         speedTestSocket.startDownload(Config.DOWNLOAD_URL);
         while (!result.isFinish()) {
             synchronized (result) {
 
             }
         }
-        downSpeed = result.getSpeed().doubleValue() / 1024; // Kbit/s
+        totalResult.setDownSpeed(result.getSpeed().doubleValue() / 1024.0); // Kbit/s
         result.setFinish(false);
         String fileName = SpeedTestUtils.generateFileName() + ".txt";
         LOG.info("upload start");
@@ -85,7 +88,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
 
             }
         }
-        upSpeed = result.getSpeed().doubleValue() / 1024; //Kbit/s
+        totalResult.setUpSpeed(result.getSpeed().doubleValue() / 1024.0); // Kbit/s
     }
 
     @Override

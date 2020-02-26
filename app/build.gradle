@@ -46,4 +46,5 @@ dependencies {
     compile('fr.bmartel:jspeedtest:1.32.1') //Speed test
     compile('org.slf4j:slf4j-api:1.7.25')
     compile('com.github.tony19:logback-android:2.0.0')
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
 }

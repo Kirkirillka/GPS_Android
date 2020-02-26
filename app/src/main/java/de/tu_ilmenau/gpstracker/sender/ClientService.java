@@ -20,6 +20,8 @@ import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.gps.ContLocationListener;
 
+import static de.tu_ilmenau.gpstracker.Config.MIN_DISTANCE_CHANGE_FOR_UPDATES;
+
 
 @SuppressLint("Registered")
 public class ClientService extends Service {
@@ -48,16 +50,16 @@ public class ClientService extends Service {
         String ip = intent.getStringExtra("IP");
         try {
             buffer = new SqliteBuffer(this);
-            clientWrapper = new ClientWrapper(getApplicationContext(), ip, buffer);
-            clientWrapper.connect();
+            /*clientWrapper = new ClientWrapper(getApplicationContext(), ip, buffer);
+            clientWrapper.connect();*/
             int timeoutVal = intent.getIntExtra("timeout", 0);
             String deviceId = intent.getStringExtra("device");
             WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             locationManager = (LocationManager)
                     getSystemService(Context.LOCATION_SERVICE);
-            locationListener = new ContLocationListener(clientWrapper, deviceId, wifiManager);
+            locationListener = new ContLocationListener(new HttpPostSender(ip, buffer), deviceId, wifiManager);
             locationManager.requestLocationUpdates(Config.LOC_MANAGER,
-                    timeoutVal * 1000, 0, locationListener);
+                    timeoutVal * 1000, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }
