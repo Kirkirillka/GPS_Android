@@ -56,7 +56,7 @@ import de.tu_ilmenau.gpstracker.sender.ClientService;
 import de.tu_ilmenau.gpstracker.sender.ClientWrapper;
 import de.tu_ilmenau.gpstracker.storage.LastLocationStorage;
 
-public class GetCurrentLocation extends Activity implements OnClickListener {
+public class GetCurrentLocation extends LocationListener {
 
     private final static int REQUEST_CODE_ASK_PERMISSIONS = 1;
     private Logger LOG =
@@ -122,13 +122,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
     public void enableClient() {
         ipAdd = ipAddress.getText().toString();
         if (!ipAdd.isEmpty() && isValidIPV4(ipAdd)) { //todo !isEmpty()
-            clientWrapper = ClientWrapper.getInstance(getApplicationContext(), ipAdd, buffer);
-            clientWrapper.setHttpSender(http_used);
-            clientWrapper.connect();
-
-            if (!http_used){
-                mqtt_used = true;
-            };
+            alertbox("Broker address", "Address is correct");
         } else {
             alertbox("Broker address", "Broker IP is not correct!");
         }
@@ -136,23 +130,6 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
 
     private static boolean isValidIPV4(final String s) {
         return IPV4_PATTERN.matcher(s).matches();
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btnLocation:
-                enableClient();
-                break;
-            case R.id.pushManually:
-                pushManually();
-                break;
-            case R.id.resetTime:
-                timeout.setText("", TextView.BufferType.EDITABLE);
-                timeoutVal = 0;
-                break;
-        }
     }
 
     private void pushManually() {
@@ -185,49 +162,25 @@ public class GetCurrentLocation extends Activity implements OnClickListener {
         new BackgroundSpeedTesterAsyncCaller().execute();
     }
 
-    /*----Method to Check GPS is enable or disable ----- */
-    private Boolean displayGpsStatus() {
-        ContentResolver contentResolver = getBaseContext()
-                .getContentResolver();
-        LOG.debug(Config.LOC_MANAGER + "------------------------------------------------------------------------------");
 
-        boolean gpsStatus = Settings.Secure
-                .isLocationProviderEnabled(contentResolver,
-                        Config.LOC_MANAGER);
-        if (gpsStatus) {
-            return true;
+    @Override
+    public void onLocationChanged(Location location) {
 
-        } else {
-            return false;
-        }
     }
 
-    /*----------Method to create an AlertBox ------------- */
-    protected void alertbox(String title, String mymessage) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(mymessage)
-                .setCancelable(false)
-                .setTitle(title)
-                .setPositiveButton("Ok",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // finish the current activity
-                                // AlertBoxAdvance.this.finish();
-                                /*Intent myIntent = new Intent(
-                                        Settings.ACTION_SECURITY_SETTINGS);
-                                startActivity(myIntent);*/
-                                dialog.cancel();
-                            }
-                        })
-                .setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // cancel the dialog box
-                                dialog.cancel();
-                            }
-                        });
-        AlertDialog alert = builder.create();
-        alert.show();
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
     }
 
     /*----------Listener class to get coordinates ------------- */
