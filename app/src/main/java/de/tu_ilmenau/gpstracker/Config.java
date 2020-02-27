@@ -15,7 +15,7 @@ public class Config {
     public final static int REQUEST_CODE_ASK_PERMISSIONS = 1;
     /*Location updating config*/
     public static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 0.1f; // 10 cm
-    public static final long MIN_TIME_BW_UPDATES = 1000 * 2; // 2 sec
+    public static final long MIN_TIME_BW_UPDATES = 500; // 0.5 sec
 
     /*Mqqt settings*/
     public static final String MQTT_PORT = "1883";
