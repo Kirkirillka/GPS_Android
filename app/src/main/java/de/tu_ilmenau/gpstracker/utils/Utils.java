@@ -7,7 +7,7 @@ import android.content.DialogInterface;
 
 import java.util.regex.Pattern;
 
-import de.tu_ilmenau.gpstracker.sender.ClientService;
+import de.tu_ilmenau.gpstracker.service.ClientService;
 import de.tu_ilmenau.gpstracker.view.MainActivity;
 
 public class Utils {

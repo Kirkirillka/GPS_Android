@@ -6,24 +6,19 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Bundle;
 
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
-import de.tu_ilmenau.gpstracker.gps.BackgroundSpeedTester;
-import de.tu_ilmenau.gpstracker.gps.MessageBuilder;
-import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
-import de.tu_ilmenau.gpstracker.model.SpeedTestTotalResult;
-import de.tu_ilmenau.gpstracker.sender.ClientService;
-import de.tu_ilmenau.gpstracker.sender.ClientWrapper;
-import de.tu_ilmenau.gpstracker.sender.HttpPostSender;
+import de.tu_ilmenau.gpstracker.listener.CustomLocationListener;
+import de.tu_ilmenau.gpstracker.tasks.BackgroundSenderCaller;
+import de.tu_ilmenau.gpstracker.service.ClientService;
+import de.tu_ilmenau.gpstracker.sender.senderImpl.MqttSender;
+import de.tu_ilmenau.gpstracker.sender.senderImpl.HttpPostSender;
+import de.tu_ilmenau.gpstracker.sender.Sender;
 import de.tu_ilmenau.gpstracker.utils.Utils;
 import de.tu_ilmenau.gpstracker.view.MainActivity;
 
@@ -34,8 +29,6 @@ import static de.tu_ilmenau.gpstracker.Config.MIN_TIME_BW_UPDATES;
  * Main processing class to interact with model and view, handle processes
  */
 public class GpsLocationViewModel extends ViewModel {
-    public MutableLiveData<Location> locationStorage = new MutableLiveData<Location>();
-    public MutableLiveData<SpeedTestTotalResult> speedStorage = new MutableLiveData<SpeedTestTotalResult>();
     private String ipV4;
     private LocationManager locationManager = null;
     private LocationListener locationListener = null;
@@ -43,6 +36,7 @@ public class GpsLocationViewModel extends ViewModel {
     private String deviceId;
     private SqliteBuffer buffer;
     private boolean httpPost = true;
+    private MqttSender mqttClient;
 
     public void init(MainActivity mainActivity, String deviceId) {
         this.mainActivity = mainActivity;
@@ -67,7 +61,18 @@ public class GpsLocationViewModel extends ViewModel {
 
 
     public void pushLocation() {
-        new BackgroundSpeedTesterAsyncCaller().execute();
+        @SuppressLint("MissingPermission") Location loc = locationManager.getLastKnownLocation(Config.LOC_MANAGER);
+        WifiManager wifiManager = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        Sender sender = mqttClient;
+        if (httpPost) {
+            sender = new HttpPostSender(ipV4, buffer);
+        }
+        if (wifiInfo == null) {
+            Utils.alertBox("Network error", "Network connection is off!", mainActivity);
+            return;
+        }
+        new BackgroundSenderCaller(loc, wifiInfo, sender, deviceId).execute();
     }
 
     public void stopService() {
@@ -78,8 +83,8 @@ public class GpsLocationViewModel extends ViewModel {
     public void startService(int timeoutVal) {
         final Intent intent = new Intent(mainActivity, ClientService.class);
         intent.putExtra("IP", ipV4);
-        intent.getStringExtra("IP");
         intent.putExtra("device", deviceId);
+        intent.putExtra("httpUse", httpPost);
         intent.putExtra("timeout", timeoutVal);
         mainActivity.startService(intent);
     }
@@ -88,87 +93,30 @@ public class GpsLocationViewModel extends ViewModel {
         this.ipV4 = ipV4;
     }
 
-    /**
-     * Listener class to get coordinates
-     */
-    private class CustomLocationListener implements LocationListener {
-        @Override
-        public void onLocationChanged(Location loc) {
+    public boolean checkMqqt() {
+        if (httpPost) {
+            return true;
         }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            // TODO Auto-generated method stub
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-            // TODO Auto-generated method stub
-        }
-
-        @Override
-        public void onStatusChanged(String provider,
-                                    int status, Bundle extras) {
-            // TODO Auto-generated method stub
-        }
+        return mqttClient != null;
     }
 
 
-    @SuppressLint("NewApi")
-    private class BackgroundSpeedTesterAsyncCaller extends BackgroundSpeedTester {
-
-        private Location loc;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+    public void enableMqtt() {
+        if (httpPost) {
+            return;
         }
-
-        @SuppressLint("MissingPermission")
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            try {
-                speedTest();
-                loc = locationManager.getLastKnownLocation(Config.LOC_MANAGER);
-                WifiManager wifiManager = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                wifiInfo = wifiManager.getConnectionInfo();
-                ClientDeviceMessage message = MessageBuilder.buildMessage(loc, wifiInfo, deviceId, totalResult);
-                if (httpPost) {
-                    HttpPostSender sender = new HttpPostSender(ipV4, buffer);
-                    sender.publish(message);
-//                    clientWrapper.publish(message);
-                    locationStorage.postValue(loc);
-                    speedStorage.postValue(totalResult);
-                } else {
-                    bufferLocation(message);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
+        if (mqttClient != null) {
+            return;
         }
-
-        private void bufferLocation(ClientDeviceMessage message) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                String payload = mapper.writeValueAsString(message);
-                buffer.insertValue(payload);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+        if (ipV4 != null && !ipV4.isEmpty()) {
+            mqttClient = MqttSender.getInstance(mainActivity.getApplicationContext(), ipV4, buffer);
+            mqttClient.connect();
+        } else {
+            Utils.alertBox("Broker address", "Broker IP is not correct!", mainActivity);
         }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-            if (wifiInfo == null) {
-                Utils.alertBox("Network error", "Network connection is off!", mainActivity);
-                return;
-            }
-        }
-
     }
 
-
+    public void setHttpPost(boolean httpPost) {
+        this.httpPost = httpPost;
+    }
 }

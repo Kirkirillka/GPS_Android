@@ -41,6 +41,7 @@ import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.R;
 import de.tu_ilmenau.gpstracker.model.SpeedTestTotalResult;
 import de.tu_ilmenau.gpstracker.presenter.GpsLocationViewModel;
+import de.tu_ilmenau.gpstracker.storage.StateStorage;
 import de.tu_ilmenau.gpstracker.utils.Utils;
 
 /**
@@ -50,13 +51,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     private Logger LOG = LoggerFactory.getLogger(MainActivity.class);
     private GpsLocationViewModel viewModel;
-    //    private LocationManager locationManager = null;
-//    private LocationListener locationListener = null;
     private Button btnGetLocation;
     private Button pushManually;
     private Button resetTime;
     private Switch pushContinuously;
-    private Switch checkbox_http_use;
+    private Switch checkboxHttpUse;
     private EditText timeout;
     private TextView xLocation;
     private TextView yLocation;
@@ -154,7 +153,19 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         downSpeedText = findViewById(R.id.speed);
         upSpeedText = findViewById(R.id.upSpeed);
         btnGetLocation = (Button) findViewById(R.id.btnLocation);
-        btnGetLocation.setOnClickListener(this);
+        timeout = findViewById(R.id.timeout);
+        btnGetLocation.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                viewModel.enableMqtt();
+            }
+        });
+        checkboxHttpUse = findViewById(R.id.pushHttp);
+        checkboxHttpUse.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                viewModel.setHttpPost(isChecked);
+            }
+        });
         pushManually = (Button) findViewById(R.id.pushManually);
         pushManually.setOnClickListener(new OnClickListener() {
             @Override
@@ -178,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         });
         viewModel = ViewModelProviders.of(this).get(GpsLocationViewModel.class);
         viewModel.init(this, deviceId);
-        viewModel.locationStorage.observe(this, new Observer<Location>() {
+        StateStorage.locationStorage.observe(this, new Observer<Location>() {
             @Override
             public void onChanged(Location location) {
                 if (location != null) {
@@ -187,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 }
             }
         });
-        viewModel.speedStorage.observe(this, new Observer<SpeedTestTotalResult>() {
+        StateStorage.speedStorage.observe(this, new Observer<SpeedTestTotalResult>() {
             @Override
             public void onChanged(SpeedTestTotalResult speed) {
                 if (speed != null) {
@@ -196,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 }
             }
         });
-//        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        checkboxHttpUse.setChecked(true);
     }
 
     private boolean setIp() {
@@ -235,17 +246,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     private void resetTimeout() {
         timeout.setText("", TextView.BufferType.EDITABLE);
     }
-   /* public void enableMqtt() {
-        ipAdd = ipAddress.getText().toString();
-        if (!ipAdd.isEmpty() && isValidIPV4(ipAdd)) { //todo !isEmpty()
-            clientWrapper = MqttClientWrapper.getInstance(getApplicationContext(), ipAdd, buffer);
-            clientWrapper.setHttpSender(httpPostReq);
-            clientWrapper.connect();
-            enableMqtt = true;
-        } else {
-            alertbox("Broker address", "Broker IP is not correct!");
-        }
-    }*/
 
     private void pushManually() {
         if (!setIp()) {
@@ -255,9 +255,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         if (!flag) {
             Utils.alertBox("GPS Status", "Your GPS is off!", this);
         }
-        /*if (!enableMqtt) {
-            alertbox("MQTT error", "You are not connected to MQTT!");
-        }*/
+        if (!viewModel.checkMqqt()) {
+            Utils.alertBox("MQTT error", "You are not connected to MQTT!", this);
+        }
         if (flag) {
             LOG.info("onClick");
             viewModel.pushLocation();

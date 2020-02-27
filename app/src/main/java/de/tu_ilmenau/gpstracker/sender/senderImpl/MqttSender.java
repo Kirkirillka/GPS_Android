@@ -1,4 +1,4 @@
-package de.tu_ilmenau.gpstracker.sender;
+package de.tu_ilmenau.gpstracker.sender.senderImpl;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -22,9 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,40 +38,31 @@ import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.model.BufferValue;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
-import fr.bmartel.protocol.http.constants.HttpMethod;
+import de.tu_ilmenau.gpstracker.sender.Sender;
 
-
-public class ClientWrapper implements Sender {
-    private static Logger LOG = LoggerFactory.getLogger(ClientWrapper.class);
-
-    private static Map<String, ClientWrapper> connections = new HashMap<>();
+/**
+ * Mqtt client for push data to selecting server
+ */
+public class MqttSender implements Sender {
+    private static Logger LOG = LoggerFactory.getLogger(MqttSender.class);
+    private static Map<String, MqttSender> connections = new HashMap<>();
 
     private MqttClient client;
-    Context context;
+    private Context context;
     private SqliteBuffer buffer;
-    private boolean httpSender;
 
-
-    String serverIp = "10.48.226.193";//TODO add ip address and port
-    final String port = "1883";
-    final String protocol = "tcp";
-
-    final int QoS = 2;
-
-    final String clientId = "Test";
-    final String subscriptionTopic = "/messages/";
-
-    final String username = "user";
-    final String password = "password";
+    private String serverIp = "10.48.226.193";//TODO add ip address and port
+    private final String clientId = "Test";
 
     protected ServiceConnection serverConn;
 
-    public static ClientWrapper getInstance(Context context, String serverIp, SqliteBuffer buffer
+    public static MqttSender getInstance(Context context, String serverIp, SqliteBuffer buffer
     ) {
-        ClientWrapper clientWrapper = connections.get(serverIp);
+        MqttSender clientWrapper = connections.get(serverIp);
         if (clientWrapper == null) {
             try {
-                clientWrapper = new ClientWrapper(context, serverIp, buffer);
+                clientWrapper = new MqttSender(context, serverIp, buffer);
+                connections.put(serverIp, clientWrapper);
             } catch (Exception e) {
                 LOG.error(e.getMessage());
             }
@@ -84,27 +72,18 @@ public class ClientWrapper implements Sender {
         return clientWrapper;
     }
 
-    public void setHttpSender(boolean httpSender) {
-        this.httpSender = httpSender;
-    }
-
-    public Context getContext() {
-        return context;
-    }
-
     public void setContext(Context context) {
         this.context = context;
     }
 
-    public ClientWrapper(Context context, String serverIp, SqliteBuffer buffer) throws MqttException {
+    private MqttSender(Context context, String serverIp, SqliteBuffer buffer) throws MqttException {
         this.context = context;
         this.buffer = buffer;
         this.serverIp = serverIp;
         String clientId = MqttClient.generateClientId();
-        String serverUri = String.format("%s://%s:%s", protocol, this.serverIp, port);
+        String serverUri = String.format("%s://%s:%s", Config.MQTT_PROTOCOL, this.serverIp, Config.MQTT_PORT);
         client = new MqttClient(serverUri, clientId, new MemoryPersistence());
         init();
-//        connect();
     }
 
     public void init() {
@@ -122,7 +101,7 @@ public class ClientWrapper implements Sender {
                 } catch (Exception e) {
                     Toast.makeText(context, "Something went wrong!" + e.getMessage(), Toast.LENGTH_LONG).show();
                     LOG.error(e.getMessage());
-                }//                Log.d(LOG_TAG, "onServiceDisconnected");
+                }
                 LOG.info("onServiceDisconnected");
             }
         };
@@ -135,44 +114,37 @@ public class ClientWrapper implements Sender {
     }
 
     public void connect() {
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1);
+        options.setCleanSession(false);
+        options.setUserName(Config.MQTT_USER);
+        options.setPassword(Config.MQTT_PASSWORD.toCharArray());
+        try {
+            client.connect(options);
+            client.setCallback(new MqttCallback() {
+                @Override
+                public void connectionLost(Throwable cause) {
+                    cause.printStackTrace();
+                }
 
-        if (httpSender) {
-            LOG.debug("Try to connect to HTTP server");
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    System.out.println("read good");
+                }
 
-        } else {
-
-            MqttConnectOptions options = new MqttConnectOptions();
-            options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1);
-            options.setCleanSession(false);
-            options.setUserName(username);
-            options.setPassword(password.toCharArray());
-            try {
-                client.connect(options);
-                client.setCallback(new MqttCallback() {
-                    @Override
-                    public void connectionLost(Throwable cause) {
-                        cause.printStackTrace();
-                    }
-
-                    @Override
-                    public void messageArrived(String topic, MqttMessage message) throws Exception {
-                        System.out.println("read good");
-                    }
-
-                    @Override
-                    public void deliveryComplete(IMqttDeliveryToken token) {
-                        System.out.println("push good");
-                    }
-                });
-            } catch (Exception e) {
-                LOG.error(e.getMessage());
-            }
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+                    System.out.println("push good");
+                }
+            });
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
         }
     }
 
     public void publish(ClientDeviceMessage clientMessage) throws JsonProcessingException {
         if (!isConnected()) {
-            LOG.info("MQTT", "connection closed");
+            LOG.info("MQTT connection closed");
         }
         ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .setDateFormat(new StdDateFormat().withColonInTimeZone(true))
@@ -205,34 +177,17 @@ public class ClientWrapper implements Sender {
     }
 
     private void internalPublish(String payload) throws IOException, MqttException {
-        if (httpSender) {
-            URL url = new URL(this.serverIp + Config.HTTP_POST_URL);
-            HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-            httpCon.setDoOutput(true);
-            httpCon.setRequestMethod(HttpMethod.POST_REQUEST);
-            httpCon.setRequestProperty("Content-Type", "application/json");
-            httpCon.setRequestProperty("Accept", "application/json");
-            OutputStreamWriter out = new OutputStreamWriter(
-                    httpCon.getOutputStream());
-            out.write(payload);
-            out.close();
-            httpCon.getInputStream();
-        } else {
-            byte[] encodedPayload = new byte[0];
-            encodedPayload = payload.getBytes("UTF-8");
-            MqttMessage message = new MqttMessage(encodedPayload);
-            message.setQos(this.QoS);
-            client.publish(subscriptionTopic, message);
-        }
+        byte[] encodedPayload = new byte[0];
+        encodedPayload = payload.getBytes("UTF-8");
+        MqttMessage message = new MqttMessage(encodedPayload);
+        message.setQos(Config.MQQTT_QOS);
+        client.publish(Config.MQTT_TOPIC, message);
     }
 
     public boolean isConnected() {
         return client.isConnected();
     }
 
-    public ServiceConnection getServerConn() {
-        return serverConn;
-    }
 
     public class MqttClientService extends Service {
 

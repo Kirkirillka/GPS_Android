@@ -1,4 +1,4 @@
-package de.tu_ilmenau.gpstracker.gps;
+package de.tu_ilmenau.gpstracker.tasks;
 
 import android.annotation.SuppressLint;
 import android.net.wifi.WifiInfo;
@@ -18,11 +18,12 @@ import fr.bmartel.speedtest.inter.ISpeedTestListener;
 import fr.bmartel.speedtest.model.SpeedTestError;
 import fr.bmartel.speedtest.utils.SpeedTestUtils;
 
+/**
+ * Background speed tester
+ */
 public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
     static Logger LOG = LoggerFactory.getLogger(BackgroundSpeedTester.class);
     protected SpeedTestTotalResult totalResult = new SpeedTestTotalResult();
-    double downSpeed = 0.0;
-    double upSpeed = 0.0;
     protected WifiInfo wifiInfo;
 
     @Override

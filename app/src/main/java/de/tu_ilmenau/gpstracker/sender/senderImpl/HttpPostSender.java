@@ -1,10 +1,9 @@
-package de.tu_ilmenau.gpstracker.sender;
+package de.tu_ilmenau.gpstracker.sender.senderImpl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +19,7 @@ import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.model.BufferValue;
 import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
+import de.tu_ilmenau.gpstracker.sender.Sender;
 import fr.bmartel.protocol.http.constants.HttpMethod;
 
 public class HttpPostSender implements Sender {
@@ -68,5 +68,10 @@ public class HttpPostSender implements Sender {
         out.write(payload);
         out.close();
         httpCon.getInputStream();
+    }
+
+    @Override
+    public void disconnect() {
+
     }
 }

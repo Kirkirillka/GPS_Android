@@ -1,4 +1,4 @@
-package de.tu_ilmenau.gpstracker.gps;
+package de.tu_ilmenau.gpstracker.utils;
 
 import android.location.Location;
 import android.net.wifi.WifiInfo;

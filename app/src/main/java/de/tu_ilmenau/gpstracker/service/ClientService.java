@@ -1,4 +1,4 @@
-package de.tu_ilmenau.gpstracker.sender;
+package de.tu_ilmenau.gpstracker.service;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -18,7 +18,10 @@ import java.util.Date;
 
 import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
-import de.tu_ilmenau.gpstracker.gps.ContLocationListener;
+import de.tu_ilmenau.gpstracker.listener.ContLocationListener;
+import de.tu_ilmenau.gpstracker.sender.Sender;
+import de.tu_ilmenau.gpstracker.sender.senderImpl.MqttSender;
+import de.tu_ilmenau.gpstracker.sender.senderImpl.HttpPostSender;
 
 import static de.tu_ilmenau.gpstracker.Config.MIN_DISTANCE_CHANGE_FOR_UPDATES;
 
@@ -29,7 +32,7 @@ public class ClientService extends Service {
     private Logger LOG = LoggerFactory.getLogger(ClientService.class);
 
     private LocationListener locationListener;
-    private ClientWrapper clientWrapper;
+    private Sender sender;
     private LocationManager locationManager;
     private SqliteBuffer buffer;
 
@@ -48,16 +51,20 @@ public class ClientService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         int i = super.onStartCommand(intent, flags, startId);
         String ip = intent.getStringExtra("IP");
+        boolean httpUse = intent.getBooleanExtra("httpUse", true);
         try {
             buffer = new SqliteBuffer(this);
-            /*clientWrapper = new ClientWrapper(getApplicationContext(), ip, buffer);
-            clientWrapper.connect();*/
+            if (!httpUse) {
+                sender = MqttSender.getInstance(getApplicationContext(), ip, buffer);
+            } else {
+                sender = new HttpPostSender(ip, buffer);
+            }
             int timeoutVal = intent.getIntExtra("timeout", 0);
             String deviceId = intent.getStringExtra("device");
             WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             locationManager = (LocationManager)
                     getSystemService(Context.LOCATION_SERVICE);
-            locationListener = new ContLocationListener(new HttpPostSender(ip, buffer), deviceId, wifiManager);
+            locationListener = new ContLocationListener(sender, deviceId, wifiManager);
             locationManager.requestLocationUpdates(Config.LOC_MANAGER,
                     timeoutVal * 1000, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
         } catch (Exception e) {
@@ -70,9 +77,9 @@ public class ClientService extends Service {
     public void onDestroy() {
         super.onDestroy();
         locationManager.removeUpdates(locationListener);
-        if (clientWrapper != null && clientWrapper.isConnected()) {
+        if (sender != null) {
             try {
-                clientWrapper.disconnect();
+                sender.disconnect();
             } catch (Exception e) {
                 LOG.error(e.getMessage());
             }
