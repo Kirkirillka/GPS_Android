@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,13 +87,10 @@ public class SqliteBuffer extends SQLiteOpenHelper {
 
     public void deleteChunk(String[] ids) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(BufferValue.TABLE_NAME, BufferValue.COLUMN_ID + " = ?", ids);
+        String args = TextUtils.join(", ", ids);
+        db.execSQL(String.format("DELETE FROM %s WHERE %s IN (%s);", BufferValue.TABLE_NAME, BufferValue.COLUMN_ID, args));
         db.close();
-        String val = "";
-        for (String id : ids) {
-            val += id + ", ";
-        }
-        LOG.info(String.format("deleted ids: %s", val));
+        LOG.info(String.format("deleted ids: %s", args));
     }
 
     public List<BufferValue> getAll() {
