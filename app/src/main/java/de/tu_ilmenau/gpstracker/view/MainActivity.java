@@ -150,20 +150,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         yLocation = (TextView) findViewById(R.id.Y);
         downSpeedText = findViewById(R.id.speed);
         upSpeedText = findViewById(R.id.upSpeed);
-        btnGetLocation = (Button) findViewById(R.id.btnLocation);
         timeout = findViewById(R.id.timeout);
-        btnGetLocation.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                viewModel.enableMqtt();
-            }
-        });
-        checkboxHttpUse = findViewById(R.id.pushHttp);
-        checkboxHttpUse.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                viewModel.setHttpPost(isChecked);
-            }
-        });
         pushManually = (Button) findViewById(R.id.pushManually);
         pushManually.setOnClickListener(new OnClickListener() {
             @Override
@@ -205,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 }
             }
         });
-        checkboxHttpUse.setChecked(true);
+        viewModel.setHttpPost(true);
     }
 
     private boolean setIp() {
