@@ -11,7 +11,8 @@ import de.tu_ilmenau.gpstracker.service.ClientService;
 import de.tu_ilmenau.gpstracker.view.MainActivity;
 
 public class Utils {
-    static private final String IPV4_REGEX = "(([0-1]?[0-9]{1,2}\\.)|(2[0-4][0-9]\\.)|(25[0-5]\\.)){3}(([0-1]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))";
+    static private final String IPV4_REGEX = "(([0-1]?[0-9]{1,2}\\.)|(2[0-4][0-9]\\.)|(25[0-5]\\.)){3}(([0-1]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))" +
+            "((\\:[0-9]{1,5}))";
     static private Pattern IPV4_PATTERN = Pattern.compile(IPV4_REGEX);
     private static final String SERVICE_CLASSNAME = ClientService.class.getName();
 

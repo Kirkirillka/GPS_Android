@@ -57,9 +57,10 @@ public class HttpPostSender implements Sender {
     }
 
     private void internalPublish(String payload, String serverIp) throws IOException {
+
         URL url = new URL(String.format("http://%s", serverIp + Config.HTTP_POST_URL));
+
         HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-        httpCon.setDoOutput(true);
         httpCon.setRequestMethod(HttpMethod.POST_REQUEST);
         httpCon.setRequestProperty("Content-Type", "application/json");
         httpCon.setRequestProperty("Accept", "application/json");
@@ -67,7 +68,8 @@ public class HttpPostSender implements Sender {
                 httpCon.getOutputStream());
         out.write(payload);
         out.close();
-        httpCon.getInputStream();
+        httpCon.connect();
+        httpCon.getResponseMessage();
     }
 
     @Override

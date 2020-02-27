@@ -33,7 +33,7 @@ public class BackgroundSenderCaller extends BackgroundSpeedTester {
     protected Void doInBackground(Void... params) {
 
         try {
-            speedTest();
+//            speedTest();
             ClientDeviceMessage message = MessageBuilder.buildMessage(location, wifiInfo, deviceId, totalResult);
             StateStorage.speedStorage.postValue(totalResult);
             StateStorage.locationStorage.postValue(location);
