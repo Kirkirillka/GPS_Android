@@ -124,16 +124,19 @@ public class MqttSender implements Sender {
             client.setCallback(new MqttCallback() {
                 @Override
                 public void connectionLost(Throwable cause) {
+                    LOG.info("connection lost" + cause.getMessage());
                     cause.printStackTrace();
                 }
 
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     System.out.println("read good");
+                    LOG.info("message arrived");
                 }
 
                 @Override
                 public void deliveryComplete(IMqttDeliveryToken token) {
+                    LOG.info("delivery completed");
                     System.out.println("push good");
                 }
             });
@@ -156,14 +159,14 @@ public class MqttSender implements Sender {
                 List<BufferValue> all = buffer.getAll();
                 List<Integer> ids = new ArrayList<>(all.size());
                 for (BufferValue val : all) {
+                    LOG.info("message sended:  " + val.getValue());
                     internalPublish(val.getValue());
                     ids.add(val.getId());
-                    LOG.info("pushed:  " + payload);
                 }
                 buffer.delete(ids);
             }
             internalPublish(payload);
-            LOG.info("payload:  " + payload);
+            LOG.info("message sended:  " + payload);
         } catch (Exception e) {
             LOG.error(e.getMessage());
             buffer.insertValue(payload);
