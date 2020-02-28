@@ -12,4 +12,7 @@ import de.tu_ilmenau.gpstracker.model.SpeedTestTotalResult;
 public class StateStorage {
     public static MutableLiveData<Location> locationStorage = new MutableLiveData<Location>();
     public static MutableLiveData<SpeedTestTotalResult> speedStorage = new MutableLiveData<SpeedTestTotalResult>();
+    public static MutableLiveData<Boolean> speedFlag = new MutableLiveData<Boolean>();
+    public static MutableLiveData<String> speedIpAddr = new MutableLiveData<String>();
+
 }

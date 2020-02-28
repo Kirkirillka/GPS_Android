@@ -30,6 +30,8 @@ import static de.tu_ilmenau.gpstracker.Config.MIN_TIME_BW_UPDATES;
  */
 public class GpsLocationViewModel extends ViewModel {
     private String ipV4;
+    private String speedTestIpV4;
+
     private LocationManager locationManager = null;
     private LocationListener locationListener = null;
     private MainActivity mainActivity;
@@ -37,7 +39,6 @@ public class GpsLocationViewModel extends ViewModel {
     private SqliteBuffer buffer;
     private boolean httpPost = true;
     private MqttSender mqttClient;
-
     public void init(MainActivity mainActivity, String deviceId) {
         this.mainActivity = mainActivity;
         this.deviceId = deviceId;
@@ -118,5 +119,9 @@ public class GpsLocationViewModel extends ViewModel {
 
     public void setHttpPost(boolean httpPost) {
         this.httpPost = httpPost;
+    }
+
+    public void setSpeedTestIpV4(String speedTestIpV4) {
+        this.speedTestIpV4 = speedTestIpV4;
     }
 }

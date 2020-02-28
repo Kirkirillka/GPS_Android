@@ -27,6 +27,7 @@ public class ContLocationListener implements LocationListener {
 
     @Override
     public void onLocationChanged(Location loc) {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
             new BackgroundSenderCaller(loc, wifiManager.getConnectionInfo(), sender, deviceId).execute();
         }

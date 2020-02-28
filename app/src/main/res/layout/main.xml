@@ -153,6 +153,55 @@
 
         </LinearLayout>
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_marginTop="35dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="1"
+                android:text="Speed test IP address:"
+                android:textColor="#000000"
+                android:textSize="27dp" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_marginBottom="20dp">
+
+            <EditText
+                android:id="@+id/speedTestIpAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="1"
+                android:hint="255.255.255.255"
+                android:textSize="30dp">
+
+                <requestFocus></requestFocus>
+            </EditText>
+
+        </LinearLayout>
+        <Switch
+            android:id="@+id/checkboxSpeedTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:text="Test speed"
+            android:textSize="27dp" />
         <View
             android:layout_width="match_parent"
             android:layout_height="2dp"

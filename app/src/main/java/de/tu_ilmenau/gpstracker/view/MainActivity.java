@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     private TextView upSpeedText;
     private TextView deviceIdText;
     private EditText ipAddress;
+    private Switch checkboxSpeedTest;
+    private EditText speedTestIpAddress;
     /*unique device id */
     private String deviceId;
 
@@ -172,6 +174,10 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 pushContListener(isChecked);
             }
         });
+        checkboxSpeedTest = findViewById(R.id.checkboxSpeedTest);
+        speedTestIpAddress = (EditText) findViewById(R.id.speedTestIpAddress);
+
+
         viewModel = ViewModelProviders.of(this).get(GpsLocationViewModel.class);
         viewModel.init(this, deviceId);
         StateStorage.locationStorage.observe(this, new Observer<Location>() {
@@ -206,8 +212,27 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         }
     }
 
+    private boolean setSpeedTestIp() {
+        boolean checked = checkboxSpeedTest.isChecked();
+        String speedTestIp = speedTestIpAddress.getText().toString();
+        if (!speedTestIp.isEmpty() && Utils.isValidIPV4(speedTestIp) && checked) {
+            StateStorage.speedFlag.setValue(checked);
+            StateStorage.speedIpAddr.setValue(speedTestIp);
+            return true;
+        } else if (checked) {
+            checkboxSpeedTest.setChecked(false);
+            StateStorage.speedFlag.setValue(false);
+            Utils.alertBox("Broker address", "IP is not correct!", this);
+            return false;
+        } else {
+            checkboxSpeedTest.setChecked(false);
+            StateStorage.speedFlag.setValue(false);
+            return true;
+        }
+    }
+
     private void pushContListener(boolean isChecked) {
-        if (!setIp()) {
+        if (!setIp() || !setSpeedTestIp()) {
             return;
         }
         if (!isChecked && Utils.serviceIsRunning(this)) {
@@ -233,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     }
 
     private void pushManually() {
-        if (!setIp()) {
+        if (!setIp() || !setSpeedTestIp()) {
             return;
         }
         boolean flag = displayGpsStatus();

@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.model.SpeedTestTempResult;
 import de.tu_ilmenau.gpstracker.model.SpeedTestTotalResult;
+import de.tu_ilmenau.gpstracker.storage.StateStorage;
 import fr.bmartel.speedtest.SpeedTestReport;
 import fr.bmartel.speedtest.SpeedTestSocket;
 import fr.bmartel.speedtest.inter.ISpeedTestListener;
@@ -39,6 +40,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
     }
 
     protected void speedTest() {
+        String value = StateStorage.speedIpAddr.getValue();
         SpeedTestSocket speedTestSocket = new SpeedTestSocket();
         final SpeedTestTempResult result = new SpeedTestTempResult();
         totalResult = new SpeedTestTotalResult();
@@ -73,7 +75,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
         });
         LOG.info("download start");
         speedTestSocket.setSocketTimeout(5 * 1000);
-        speedTestSocket.startDownload(Config.DOWNLOAD_URL);
+        speedTestSocket.startDownload(String.format(Config.DOWNLOAD_URL_TEMPL, value));
         while (!result.isFinish()) {
             synchronized (result) {
 
@@ -83,7 +85,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
         result.setFinish(false);
         String fileName = SpeedTestUtils.generateFileName() + ".txt";
         LOG.info("upload start");
-        speedTestSocket.startUpload(Config.UPLOAD_URL + "/" + fileName, 1000000);
+        speedTestSocket.startUpload(String.format(Config.UPLOAD_TEMPL, value) + "/" + fileName, 1000000);
         while (!result.isFinish()) {
             synchronized (result) {
 
