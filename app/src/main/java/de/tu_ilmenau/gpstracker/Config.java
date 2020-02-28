@@ -27,9 +27,9 @@ public class Config {
 
     /*Speed test config*/
     public final static String DOWNLOAD_URL = "ftp://speedtest:speedtest@192.168.10.1/1MB.zip";
-    public final static String UPLOAD_URL = "ftp://speedtest:speedtest@192.168.10.1/upload";
+    public final static String UPLOAD_URL = "ftp://speedtest:speedtest@192.168.10.1/";
 
     /*Speed test config*/
     public final static String DOWNLOAD_URL_TEMPL = "ftp://speedtest:speedtest@%s/1MB.zip";
-    public final static String UPLOAD_TEMPL = "ftp://speedtest:speedtest@%s/upload";
+    public final static String UPLOAD_TEMPL = "ftp://speedtest:speedtest@%s/";
 }
