@@ -7,10 +7,7 @@ import android.os.AsyncTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-
 import de.tu_ilmenau.gpstracker.Config;
-import de.tu_ilmenau.gpstracker.model.SpeedTestTempResult;
 import de.tu_ilmenau.gpstracker.model.SpeedTestTotalResult;
 import de.tu_ilmenau.gpstracker.storage.StateStorage;
 import fr.bmartel.speedtest.SpeedTestReport;
@@ -24,6 +21,7 @@ import fr.bmartel.speedtest.utils.SpeedTestUtils;
  */
 public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
     static Logger LOG = LoggerFactory.getLogger(BackgroundSpeedTester.class);
+
     protected SpeedTestTotalResult totalResult = new SpeedTestTotalResult();
     protected WifiInfo wifiInfo;
 
@@ -39,30 +37,34 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
         return null;
     }
 
-    protected void speedTest() {
+    protected void doUplinkTest(){
+
         String value = StateStorage.speedIpAddr.getValue();
         SpeedTestSocket speedTestSocket = new SpeedTestSocket();
-        final SpeedTestTempResult result = new SpeedTestTempResult();
-        totalResult = new SpeedTestTotalResult();
+
         speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {
 
             @Override
             public void onCompletion(SpeedTestReport report) {
                 // called when download/upload is complete
-                synchronized (result) {
-                    result.setSpeed(report.getTransferRateBit());
-                    result.setFinish(true);
+                synchronized (totalResult) {
+
+                    double rate = report.getTransferRateBit().doubleValue() / 8 / 1024;
+
+                    totalResult.setUpSpeed(rate);
+                    totalResult.setUpSpeedReady(true);
                 }
                 LOG.info("[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
             }
 
             @Override
             public void onError(SpeedTestError speedTestError, String errorMessage) {
-                synchronized (result) {
-                    result.setSpeed(BigDecimal.ZERO);
-                    result.setFinish(true);
+                synchronized (totalResult) {
+
+                    totalResult.setUpSpeed(0);
+                    totalResult.setUpSpeedReady(true);
                 }
-                LOG.info("[FAILED] load or download: " + errorMessage);
+                LOG.info("[FAILED] upload: " + errorMessage);
                 // called when a download/upload error occur
 
             }
@@ -73,25 +75,78 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
                 LOG.debug("[PROGRESS] progress : " + percent + "%");
             }
         });
-        LOG.info("download start");
-        speedTestSocket.setSocketTimeout(5 * 1000);
-        speedTestSocket.startDownload(String.format(Config.DOWNLOAD_URL_TEMPL, value));
-        while (!result.isFinish()) {
-            synchronized (result) {
 
-            }
-        }
-        totalResult.setDownSpeed(result.getSpeed().doubleValue() / 1024.0); // Kbit/s
-        result.setFinish(false);
         String fileName = SpeedTestUtils.generateFileName() + ".txt";
         LOG.info("upload start");
         speedTestSocket.startUpload(String.format(Config.UPLOAD_TEMPL, value) + "/" + fileName, 1000000);
-        while (!result.isFinish()) {
-            synchronized (result) {
+    }
+
+
+    protected void doDownlinkTest(){
+
+        String value = StateStorage.speedIpAddr.getValue();
+        SpeedTestSocket speedTestSocket = new SpeedTestSocket();
+
+        speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {
+
+            @Override
+            public void onCompletion(SpeedTestReport report) {
+                // called when download/upload is complete
+                synchronized (totalResult) {
+
+                    double rate = report.getTransferRateBit().doubleValue() / 8 / 1024;
+
+                    totalResult.setDownSpeed(rate);
+                    totalResult.setDownSpeedReady(true);
+                }
+                LOG.info("[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
+            }
+
+            @Override
+            public void onError(SpeedTestError speedTestError, String errorMessage) {
+                synchronized (totalResult) {
+
+                    totalResult.setDownSpeed(0);
+                    totalResult.setDownSpeedReady(true);
+                }
+                LOG.info("[FAILED] download: " + errorMessage);
+                // called when a download/upload error occur
 
             }
+
+            @Override
+            public void onProgress(float percent, SpeedTestReport report) {
+                // called to notify download/upload progress
+                LOG.debug("[PROGRESS] progress : " + percent + "%");
+            }
+        });
+
+        LOG.info("download start");
+
+        speedTestSocket.setSocketTimeout(5 * 1000);
+        speedTestSocket.startDownload(String.format(Config.DOWNLOAD_URL_TEMPL, value));
+
+    }
+
+    protected void speedTest() {
+
+        doDownlinkTest();
+
+        //what until downlink test is done
+
+        while (!totalResult.isDownlinkReady())
+        {
+            //wait//
         }
-        totalResult.setUpSpeed(result.getSpeed().doubleValue() / 1024.0); // Kbit/s
+
+        doUplinkTest();
+
+        //what until uplink test is done
+
+        while (!totalResult.isUplinkReady())
+        {
+            //wait//
+        }
     }
 
     @Override

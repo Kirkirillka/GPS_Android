@@ -193,8 +193,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             @Override
             public void onChanged(SpeedTestTotalResult speed) {
                 if (speed != null) {
-                    downSpeedText.setText(String.format("Down speed: %s Kbs", speed.getDownSpeed()));
-                    upSpeedText.setText(String.format("Up speed: %s Kbs", speed.getUpSpeed()));
+                    downSpeedText.setText(String.format("Down speed: %s kB/s", speed.getDownSpeed()));
+                    upSpeedText.setText(String.format("Up speed: %s kB/s", speed.getUpSpeed()));
                 }
             }
         });
@@ -264,9 +264,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         boolean flag = displayGpsStatus();
         if (!flag) {
             Utils.alertBox("GPS Status", "Your GPS is off!", this);
-        }
-        if (!viewModel.checkMqqt()) {
-            Utils.alertBox("MQTT error", "You are not connected to MQTT!", this);
         }
         if (flag) {
             LOG.info("onClick");

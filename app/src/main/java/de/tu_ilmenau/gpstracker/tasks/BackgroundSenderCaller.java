@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.location.Location;
 import android.net.wifi.WifiInfo;
 
-import androidx.lifecycle.Observer;
 
 import de.tu_ilmenau.gpstracker.utils.MessageBuilder;
 import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
@@ -39,10 +38,14 @@ public class BackgroundSenderCaller extends BackgroundSpeedTester {
             if (Boolean.TRUE.equals(needTestSpeed)) {
                 speedTest();
             }
+            // prepare message to send
             ClientDeviceMessage message = MessageBuilder.buildMessage(location, wifiInfo, deviceId, totalResult);
+            // update view-model
             StateStorage.speedStorage.postValue(totalResult);
             StateStorage.locationStorage.postValue(location);
+            // send message
             sender.publish(message);
+
         } catch (Exception e) {
             LOG.error(e.getMessage());
             e.printStackTrace();
