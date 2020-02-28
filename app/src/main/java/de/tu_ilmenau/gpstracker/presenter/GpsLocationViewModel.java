@@ -38,7 +38,6 @@ public class GpsLocationViewModel extends ViewModel {
     private String deviceId;
     private SqliteBuffer buffer;
     private boolean httpPost = true;
-    private MqttSender mqttClient;
     public void init(MainActivity mainActivity, String deviceId) {
         this.mainActivity = mainActivity;
         this.deviceId = deviceId;
@@ -65,10 +64,9 @@ public class GpsLocationViewModel extends ViewModel {
         @SuppressLint("MissingPermission") Location loc = locationManager.getLastKnownLocation(Config.LOC_MANAGER);
         WifiManager wifiManager = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        Sender sender = mqttClient;
-        if (httpPost) {
-            sender = new HttpPostSender(ipV4, buffer);
-        }
+        // Just use HTTP
+        Sender sender = new HttpPostSender(ipV4, buffer);
+
         if (wifiInfo == null) {
             Utils.alertBox("Network error", "Network connection is off!", mainActivity);
             return;
@@ -94,34 +92,7 @@ public class GpsLocationViewModel extends ViewModel {
         this.ipV4 = ipV4;
     }
 
-    public boolean checkMqqt() {
-        if (httpPost) {
-            return true;
-        }
-        return mqttClient != null;
-    }
-
-
-    public void enableMqtt() {
-        if (httpPost) {
-            return;
-        }
-        if (mqttClient != null) {
-            return;
-        }
-        if (ipV4 != null && !ipV4.isEmpty()) {
-            mqttClient = MqttSender.getInstance(mainActivity.getApplicationContext(), ipV4, buffer);
-            mqttClient.connect();
-        } else {
-            Utils.alertBox("Broker address", "Broker IP is not correct!", mainActivity);
-        }
-    }
-
     public void setHttpPost(boolean httpPost) {
         this.httpPost = httpPost;
-    }
-
-    public void setSpeedTestIpV4(String speedTestIpV4) {
-        this.speedTestIpV4 = speedTestIpV4;
     }
 }
