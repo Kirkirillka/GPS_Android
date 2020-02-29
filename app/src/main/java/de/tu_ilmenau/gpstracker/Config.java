@@ -5,7 +5,7 @@ import android.location.LocationManager;
 
 public class Config {
     public static final String HTTP_POST_URL = "/message/new";
-    public static String LOC_MANAGER = LocationManager.GPS_PROVIDER;
+    public static String DEFAULT_LOCATION_PROIDER = LocationManager.GPS_PROVIDER;
     /**
      * Permissions that need to be explicitly requested from end user.
      */
@@ -14,8 +14,8 @@ public class Config {
             Manifest.permission.READ_EXTERNAL_STORAGE};
     public final static int REQUEST_CODE_ASK_PERMISSIONS = 1;
     /*Location updating config*/
-    public static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 0.1f; // 10 cm
-    public static final long MIN_TIME_BW_UPDATES = 500; // 0.5 sec
+    public static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 1; // 1 m
+    public static final long MIN_TIME_BW_UPDATES = 1000; // 0.5 sec
 
     /*Mqqt settings*/
     public static final String MQTT_PORT = "1883";

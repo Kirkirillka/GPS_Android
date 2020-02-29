@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 
 import de.tu_ilmenau.gpstracker.sender.Sender;
-import de.tu_ilmenau.gpstracker.tasks.BackgroundSenderCaller;
 
 /**
  * Background service location listener
@@ -29,7 +28,7 @@ public class ContLocationListener implements LocationListener {
     public void onLocationChanged(Location loc) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CUPCAKE) {
-            new BackgroundSenderCaller(loc, wifiManager.getConnectionInfo(), sender, deviceId).execute();
+            //new BackgroundSenderCaller(loc, wifiManager.getConnectionInfo(), sender, deviceId).execute();
         }
     }
 

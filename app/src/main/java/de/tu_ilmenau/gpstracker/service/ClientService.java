@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 
 import de.tu_ilmenau.gpstracker.Config;
-import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
+import de.tu_ilmenau.gpstracker.database.SQLiteRepository;
 import de.tu_ilmenau.gpstracker.listener.ContLocationListener;
 import de.tu_ilmenau.gpstracker.sender.Sender;
 import de.tu_ilmenau.gpstracker.sender.senderImpl.MqttSender;
@@ -34,7 +34,7 @@ public class ClientService extends Service {
     private LocationListener locationListener;
     private Sender sender;
     private LocationManager locationManager;
-    private SqliteBuffer buffer;
+    private SQLiteRepository buffer;
 
     public ClientService() {
         super();
@@ -53,7 +53,7 @@ public class ClientService extends Service {
         String ip = intent.getStringExtra("IP");
         boolean httpUse = intent.getBooleanExtra("httpUse", true);
         try {
-            buffer = new SqliteBuffer(this);
+            buffer = new SQLiteRepository(this);
             if (!httpUse) {
                 sender = MqttSender.getInstance(getApplicationContext(), ip, buffer);
             } else {
@@ -65,7 +65,7 @@ public class ClientService extends Service {
             locationManager = (LocationManager)
                     getSystemService(Context.LOCATION_SERVICE);
             locationListener = new ContLocationListener(sender, deviceId, wifiManager);
-            locationManager.requestLocationUpdates(Config.LOC_MANAGER,
+            locationManager.requestLocationUpdates(Config.DEFAULT_LOCATION_PROIDER,
                     timeoutVal * 1000, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
         } catch (Exception e) {
             LOG.error(e.getMessage());

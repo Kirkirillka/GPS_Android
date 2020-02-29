@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.util.StdDateFormat;
 
 import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.model.BufferValue;
-import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
+import de.tu_ilmenau.gpstracker.database.SQLiteRepository;
 import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
 import de.tu_ilmenau.gpstracker.sender.Sender;
 
@@ -49,14 +49,14 @@ public class MqttSender implements Sender {
 
     private MqttClient client;
     private Context context;
-    private SqliteBuffer buffer;
+    private SQLiteRepository buffer;
 
     private String serverIp = "10.48.226.193";//TODO add ip address and port
     private final String clientId = "Test";
 
     protected ServiceConnection serverConn;
 
-    public static MqttSender getInstance(Context context, String serverIp, SqliteBuffer buffer
+    public static MqttSender getInstance(Context context, String serverIp, SQLiteRepository buffer
     ) {
         MqttSender clientWrapper = connections.get(serverIp);
         if (clientWrapper == null) {
@@ -76,7 +76,7 @@ public class MqttSender implements Sender {
         this.context = context;
     }
 
-    private MqttSender(Context context, String serverIp, SqliteBuffer buffer) throws MqttException {
+    private MqttSender(Context context, String serverIp, SQLiteRepository buffer) throws MqttException {
         this.context = context;
         this.buffer = buffer;
         this.serverIp = serverIp;

@@ -18,7 +18,7 @@ import de.tu_ilmenau.gpstracker.model.BufferValue;
 /**
  * This class realize connection to local SQlite database storage as buffer
  */
-public class SqliteBuffer extends SQLiteOpenHelper {
+public class SQLiteRepository extends SQLiteOpenHelper {
 
     private Logger LOG = LoggerFactory.getLogger(SQLiteOpenHelper.class);
 
@@ -29,7 +29,7 @@ public class SqliteBuffer extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "notes_db";
 
 
-    public SqliteBuffer(Context context) {
+    public SQLiteRepository(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 

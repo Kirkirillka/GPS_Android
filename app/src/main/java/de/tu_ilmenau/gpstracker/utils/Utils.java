@@ -8,7 +8,7 @@ import android.content.DialogInterface;
 import java.util.regex.Pattern;
 
 import de.tu_ilmenau.gpstracker.service.ClientService;
-import de.tu_ilmenau.gpstracker.view.MainActivity;
+import de.tu_ilmenau.gpstracker.mvp.GPSTrackerActivity;
 
 public class Utils {
     static private final String IPV4_REGEX = "(([0-1]?[0-9]{1,2}\\.)|(2[0-4][0-9]\\.)|(25[0-5]\\.)){3}(([0-1]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))" +
@@ -20,8 +20,8 @@ public class Utils {
         return IPV4_PATTERN.matcher(s).matches();
     }
 
-    public static boolean serviceIsRunning(MainActivity mainActivity) {
-        ActivityManager manager = (ActivityManager) mainActivity.getSystemService(Context.ACTIVITY_SERVICE);
+    public static boolean serviceIsRunning(GPSTrackerActivity GPSTrackerActivity) {
+        ActivityManager manager = (ActivityManager) GPSTrackerActivity.getSystemService(Context.ACTIVITY_SERVICE);
         assert manager != null;
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (SERVICE_CLASSNAME.equals(service.service.getClassName())) {
@@ -38,7 +38,7 @@ public class Utils {
      * @param message message in alerting box
      * @param activity activity for inserting alert
      */
-    public static void alertBox(String title, String message, MainActivity activity) {
+    public static void alertBox(String title, String message, GPSTrackerActivity activity) {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setMessage(message)
                 .setCancelable(false)

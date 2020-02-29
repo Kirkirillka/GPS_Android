@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.model.SpeedTestTotalResult;
-import de.tu_ilmenau.gpstracker.storage.StateStorage;
+import de.tu_ilmenau.gpstracker.mvp.GPSTrackerModel;
 import fr.bmartel.speedtest.SpeedTestReport;
 import fr.bmartel.speedtest.SpeedTestSocket;
 import fr.bmartel.speedtest.inter.ISpeedTestListener;
@@ -19,8 +19,8 @@ import fr.bmartel.speedtest.utils.SpeedTestUtils;
 /**
  * Background speed tester
  */
-public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
-    static Logger LOG = LoggerFactory.getLogger(BackgroundSpeedTester.class);
+public class SpeedTester extends AsyncTask<Void, Void, Void> {
+    static Logger LOG = LoggerFactory.getLogger(SpeedTester.class);
 
     protected SpeedTestTotalResult totalResult = new SpeedTestTotalResult();
     protected WifiInfo wifiInfo;
@@ -39,7 +39,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
 
     protected void doUplinkTest(){
 
-        String value = StateStorage.speedIpAddr.getValue();
+        String value = GPSTrackerModel.speedTestIPAddress.getValue();
         SpeedTestSocket speedTestSocket = new SpeedTestSocket();
 
         speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {
@@ -81,10 +81,9 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
         speedTestSocket.startUpload(String.format(Config.UPLOAD_TEMPL, value) + "/" + fileName, 1000000);
     }
 
-
     protected void doDownlinkTest(){
 
-        String value = StateStorage.speedIpAddr.getValue();
+        String value = GPSTrackerModel.speedTestIPAddress.getValue();
         SpeedTestSocket speedTestSocket = new SpeedTestSocket();
 
         speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import de.tu_ilmenau.gpstracker.Config;
-import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
+import de.tu_ilmenau.gpstracker.database.SQLiteRepository;
 import de.tu_ilmenau.gpstracker.model.BufferValue;
 import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
 import de.tu_ilmenau.gpstracker.sender.Sender;
@@ -25,9 +25,9 @@ import fr.bmartel.protocol.http.constants.HttpMethod;
 public class HttpPostSender implements Sender {
     private static Logger LOG = LoggerFactory.getLogger(HttpPostSender.class);
     private String serverIp;
-    private SqliteBuffer buffer;
+    private SQLiteRepository buffer;
 
-    public HttpPostSender(String serverIp, SqliteBuffer buffer) {
+    public HttpPostSender(String serverIp, SQLiteRepository buffer) {
         this.serverIp = serverIp;
         this.buffer = buffer;
     }

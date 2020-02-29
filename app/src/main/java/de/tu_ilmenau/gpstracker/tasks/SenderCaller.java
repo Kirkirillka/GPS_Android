@@ -8,25 +8,18 @@ import android.net.wifi.WifiInfo;
 import de.tu_ilmenau.gpstracker.utils.MessageBuilder;
 import de.tu_ilmenau.gpstracker.model.ClientDeviceMessage;
 import de.tu_ilmenau.gpstracker.sender.Sender;
-import de.tu_ilmenau.gpstracker.storage.StateStorage;
+import de.tu_ilmenau.gpstracker.mvp.GPSTrackerModel;
 
-public class BackgroundSenderCaller extends BackgroundSpeedTester {
+public class SenderCaller extends SpeedTester {
 
-    private Location location;
     private WifiInfo wifiInfo;
     private Sender sender;
     private String deviceId;
 
-    public BackgroundSenderCaller(Location location, WifiInfo wifiInfo, Sender sender, String deviceId) {
-        this.location = location;
+    public SenderCaller(WifiInfo wifiInfo, Sender sender, String deviceId) {
         this.wifiInfo = wifiInfo;
         this.sender = sender;
         this.deviceId = deviceId;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
     }
 
     @SuppressLint("MissingPermission")
@@ -34,15 +27,16 @@ public class BackgroundSenderCaller extends BackgroundSpeedTester {
     protected Void doInBackground(Void... params) {
 
         try {
-            Boolean needTestSpeed = StateStorage.speedFlag.getValue();
+            Boolean needTestSpeed = GPSTrackerModel.isSpeedTestEnabled.getValue();
             if (Boolean.TRUE.equals(needTestSpeed)) {
                 speedTest();
             }
             // prepare message to send
-            ClientDeviceMessage message = MessageBuilder.buildMessage(location, wifiInfo, deviceId, totalResult);
+            ClientDeviceMessage message = MessageBuilder.buildMessage(wifiInfo, deviceId, totalResult);
+
             // update view-model
-            StateStorage.speedStorage.postValue(totalResult);
-            StateStorage.locationStorage.postValue(location);
+            GPSTrackerModel.speed.postValue(totalResult);
+
             // send message
             sender.publish(message);
 
