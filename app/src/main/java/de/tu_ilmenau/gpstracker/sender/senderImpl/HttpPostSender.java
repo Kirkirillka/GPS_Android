@@ -1,9 +1,13 @@
 package de.tu_ilmenau.gpstracker.sender.senderImpl;
 
+import android.widget.Toast;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
+import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,12 +36,15 @@ public class HttpPostSender implements Sender {
         this.buffer = buffer;
     }
 
-    public void publish(ClientDeviceMessage clientMessage) throws IOException {
+    public boolean publish(ClientDeviceMessage clientMessage) {
+        String payload = "";
+
         ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .setDateFormat(new StdDateFormat().withColonInTimeZone(true))
                 .setTimeZone(TimeZone.getDefault());
-        String payload = mapper.writeValueAsString(clientMessage);
+
         try {
+            payload = mapper.writeValueAsString(clientMessage);
             if (buffer.getCount() > 0) {
                 List<BufferValue> all = buffer.getAll();
                 List<Integer> ids = new ArrayList<>(all.size());
@@ -48,29 +55,46 @@ public class HttpPostSender implements Sender {
                 }
                 buffer.delete(ids);
             }
-            internalPublish(payload, serverIp);
-            LOG.info("payload:  " + payload);
-        } catch (Exception e) {
-            LOG.error(e.getMessage());
-            buffer.insertValue(payload);
+
+            boolean isSent = internalPublish(payload, serverIp);
+            if (!isSent) {
+                LOG.error("Cannot send a message to the provided address. Save to local DB to send the next time.");
+                buffer.insertValue(payload);
+
+                return false;
+            } else {
+                LOG.info("A new message successfully sent");
+                LOG.debug("payload:  " + payload);
+                return true;
+            }
+        } catch (JsonProcessingException e) {
+            LOG.error("Cannot process the message, wrong format!");
+            return false;
         }
     }
 
-    private void internalPublish(String payload, String serverIp) throws IOException {
+    private boolean internalPublish(String payload, String serverIp) {
 
-        URL url = new URL(String.format("http://%s", serverIp + Config.HTTP_POST_URL));
+        try {
+            URL url = new URL(String.format("http://%s", serverIp + Config.HTTP_POST_URL));
 
-        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-        httpCon.setRequestMethod(HttpMethod.POST_REQUEST);
-        httpCon.setRequestProperty("Content-Type", "application/json");
-        httpCon.setRequestProperty("Accept", "application/json");
-        OutputStreamWriter out = new OutputStreamWriter(
-                httpCon.getOutputStream());
-        out.write(payload);
-        out.close();
-        httpCon.connect();
-        httpCon.getResponseMessage();
+            HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
+            httpCon.setRequestMethod(HttpMethod.POST_REQUEST);
+            httpCon.setRequestProperty("Content-Type", "application/json");
+            httpCon.setRequestProperty("Accept", "application/json");
+            OutputStreamWriter out = new OutputStreamWriter(
+                    httpCon.getOutputStream());
+            out.write(payload);
+            out.close();
+            httpCon.connect();
+            httpCon.getResponseMessage();
+
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
+
 
     @Override
     public void disconnect() {
