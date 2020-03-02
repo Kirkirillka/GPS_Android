@@ -33,23 +33,23 @@ public class BackgroundSenderCaller extends BackgroundSpeedTester {
     @Override
     protected Void doInBackground(Void... params) {
 
-        try {
-            Boolean needTestSpeed = StateStorage.speedFlag.getValue();
-            if (Boolean.TRUE.equals(needTestSpeed)) {
-                speedTest();
-            }
-            // prepare message to send
-            ClientDeviceMessage message = MessageBuilder.buildMessage(location, wifiInfo, deviceId, totalResult);
-            // update view-model
-            StateStorage.speedStorage.postValue(totalResult);
-            StateStorage.locationStorage.postValue(location);
-            // send message
-            sender.publish(message);
+        Boolean needTestSpeed = StateStorage.speedFlag.getValue();
 
-        } catch (Exception e) {
-            LOG.error(e.getMessage());
-            e.printStackTrace();
+        if (Boolean.TRUE.equals(needTestSpeed)) {
+            speedTest();
         }
+        // prepare message to send
+        ClientDeviceMessage message = MessageBuilder.buildMessage(location, wifiInfo, deviceId, totalResult);
+        // update view-model
+        StateStorage.speedStorage.postValue(totalResult);
+        StateStorage.locationStorage.postValue(location);
+        // send message
+        boolean res = sender.publish(message);
+
+        if (!res) {
+            LOG.error("Cannot send the message");
+        };
+
         return null;
     }
 
