@@ -20,7 +20,6 @@ import de.tu_ilmenau.gpstracker.Config;
 import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.listener.ContLocationListener;
 import de.tu_ilmenau.gpstracker.sender.Sender;
-import de.tu_ilmenau.gpstracker.sender.senderImpl.MqttSender;
 import de.tu_ilmenau.gpstracker.sender.senderImpl.HttpPostSender;
 
 import static de.tu_ilmenau.gpstracker.Config.MIN_DISTANCE_CHANGE_FOR_UPDATES;
@@ -54,11 +53,9 @@ public class ClientService extends Service {
         boolean httpUse = intent.getBooleanExtra("httpUse", true);
         try {
             buffer = new SqliteBuffer(this);
-            if (!httpUse) {
-                sender = MqttSender.getInstance(getApplicationContext(), ip, buffer);
-            } else {
-                sender = new HttpPostSender(ip, buffer);
-            }
+
+            sender = new HttpPostSender(ip, buffer);
+
             int timeoutVal = intent.getIntExtra("timeout", 0);
             String deviceId = intent.getStringExtra("device");
             WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
