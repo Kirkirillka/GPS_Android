@@ -13,6 +13,7 @@ import de.tu_ilmenau.gpstracker.storage.StateStorage;
 import fr.bmartel.speedtest.SpeedTestReport;
 import fr.bmartel.speedtest.SpeedTestSocket;
 import fr.bmartel.speedtest.inter.ISpeedTestListener;
+import fr.bmartel.speedtest.model.FtpMode;
 import fr.bmartel.speedtest.model.SpeedTestError;
 import fr.bmartel.speedtest.utils.SpeedTestUtils;
 
@@ -41,6 +42,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
 
         String value = StateStorage.speedIpAddr.getValue();
         SpeedTestSocket speedTestSocket = new SpeedTestSocket();
+        speedTestSocket.setFtpMode(FtpMode.ACTIVE);
 
         speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {
 
@@ -86,6 +88,7 @@ public class BackgroundSpeedTester extends AsyncTask<Void, Void, Void> {
 
         String value = StateStorage.speedIpAddr.getValue();
         SpeedTestSocket speedTestSocket = new SpeedTestSocket();
+        speedTestSocket.setFtpMode(FtpMode.ACTIVE);
 
         speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {
 
