@@ -4,12 +4,15 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
 
+import de.tu_ilmenau.gpstracker.storage.StateStorage;
+
 /**
  * Listener class to get coordinates
  */
 public class CustomLocationListener implements LocationListener {
     @Override
     public void onLocationChanged(Location loc) {
+        StateStorage.locationStorage.postValue(loc);
     }
 
     @Override
