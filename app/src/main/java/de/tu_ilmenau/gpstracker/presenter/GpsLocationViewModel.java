@@ -16,7 +16,6 @@ import de.tu_ilmenau.gpstracker.database.SqliteBuffer;
 import de.tu_ilmenau.gpstracker.listener.CustomLocationListener;
 import de.tu_ilmenau.gpstracker.tasks.BackgroundSenderCaller;
 import de.tu_ilmenau.gpstracker.service.ClientService;
-import de.tu_ilmenau.gpstracker.sender.senderImpl.MqttSender;
 import de.tu_ilmenau.gpstracker.sender.senderImpl.HttpPostSender;
 import de.tu_ilmenau.gpstracker.sender.Sender;
 import de.tu_ilmenau.gpstracker.utils.Utils;
