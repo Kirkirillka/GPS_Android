@@ -9,51 +9,35 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <com.google.android.material.appbar.AppBarLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="@style/AppTheme.AppBarOverlay">
-
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
-                app:popupTheme="@style/AppTheme.AppBarOverlay" />
-
-        </com.google.android.material.appbar.AppBarLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
             android:layout_marginTop="10dp">
 
             <TextView
                 android:id="@+id/speed"
-                android:layout_width="300dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:layout_weight="0.1"
+                android:layout_marginLeft="20dp"
                 android:ems="7"
+                android:gravity="left"
                 android:hint="Down speed"
-                android:inputType="numberSigned"
                 android:textSize="22dp" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
             android:layout_marginTop="10dp">
 
             <TextView
                 android:id="@+id/upSpeed"
-                android:layout_width="300dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:layout_weight="0.1"
+                android:layout_marginLeft="20dp"
+                android:editable="true"
                 android:ems="7"
+                android:gravity="left"
                 android:hint="Up speed"
                 android:inputType="numberSigned"
                 android:textSize="22dp"
@@ -89,10 +73,10 @@
 
             <TextView
                 android:id="@+id/X"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
-                android:layout_weight="0.1"
+                android:layout_marginRight="20dp"
                 android:ems="5"
                 android:gravity="left"
                 android:hint="X"
@@ -102,10 +86,10 @@
 
             <TextView
                 android:id="@+id/Y"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
-                android:layout_weight="0.1"
+                android:layout_marginRight="20dp"
                 android:ems="5"
                 android:gravity="left"
                 android:hint="Y"
@@ -144,6 +128,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:layout_weight="1"
                 android:hint="255.255.255.255"
                 android:textSize="30dp">
@@ -184,6 +169,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:layout_weight="1"
                 android:hint="255.255.255.255"
                 android:textSize="30dp">
