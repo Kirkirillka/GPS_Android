@@ -9,51 +9,35 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <com.google.android.material.appbar.AppBarLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="@style/AppTheme.AppBarOverlay">
-
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
-                app:popupTheme="@style/AppTheme.AppBarOverlay" />
-
-        </com.google.android.material.appbar.AppBarLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
             android:layout_marginTop="10dp">
 
             <TextView
                 android:id="@+id/speed"
-                android:layout_width="300dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:layout_weight="0.1"
+                android:layout_marginLeft="20dp"
                 android:ems="7"
+                android:gravity="left"
                 android:hint="Down speed"
-                android:inputType="numberSigned"
                 android:textSize="22dp" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
             android:layout_marginTop="10dp">
 
             <TextView
                 android:id="@+id/upSpeed"
-                android:layout_width="300dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:layout_weight="0.1"
+                android:layout_marginLeft="20dp"
+                android:editable="true"
                 android:ems="7"
+                android:gravity="left"
                 android:hint="Up speed"
                 android:inputType="numberSigned"
                 android:textSize="22dp"
@@ -89,10 +73,10 @@
 
             <TextView
                 android:id="@+id/X"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
-                android:layout_weight="0.1"
+                android:layout_marginRight="20dp"
                 android:ems="5"
                 android:gravity="left"
                 android:hint="X"
@@ -102,10 +86,10 @@
 
             <TextView
                 android:id="@+id/Y"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
-                android:layout_weight="0.1"
+                android:layout_marginRight="20dp"
                 android:ems="5"
                 android:gravity="left"
                 android:hint="Y"
@@ -125,7 +109,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
                 android:layout_weight="1"
-                android:text="MQTT IP address:"
+                android:text="Server IP address:"
                 android:textColor="#000000"
                 android:textSize="27dp" />
 
@@ -144,6 +128,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:layout_weight="1"
                 android:hint="255.255.255.255"
                 android:textSize="30dp">
@@ -151,24 +136,57 @@
                 <requestFocus></requestFocus>
             </EditText>
 
-            <Button
-                android:id="@+id/btnLocation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="20dp"
-                android:text="Connect"
-                android:textSize="17dp"></Button>
         </LinearLayout>
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_marginTop="35dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="1"
+                android:text="Speed test IP address:"
+                android:textColor="#000000"
+                android:textSize="27dp" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_marginBottom="20dp">
+
+            <EditText
+                android:id="@+id/speedTestIpAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_weight="1"
+                android:hint="255.255.255.255"
+                android:textSize="30dp">
+
+                <requestFocus></requestFocus>
+            </EditText>
+
+        </LinearLayout>
         <Switch
-            android:id="@+id/pushHttp"
+            android:id="@+id/checkboxSpeedTest"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:layout_weight="1"
             android:gravity="left"
-            android:text="Use http:   "
+            android:text="Test speed"
             android:textSize="27dp" />
         <View
             android:layout_width="match_parent"
