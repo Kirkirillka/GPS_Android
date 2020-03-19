@@ -1,127 +1,283 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:weightSum="1">
+    android:layout_height="fill_parent">
+
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TextView
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Location coordinates:"
-            android:layout_weight="0.1"
-            android:gravity="left"
-            android:textSize="20sp" />
+            android:layout_marginTop="10dp">
 
-        <EditText
-            android:id="@+id/X"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/speed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:ems="7"
+                android:gravity="left"
+                android:hint="Down speed"
+                android:textSize="22dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.1"
-            android:ems="10"
-            android:hint="X="
-            android:layout_gravity="center"
-            android:inputType="numberSigned" />
-        <EditText
-            android:id="@+id/Y"
-            android:layout_width="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <TextView
+                android:id="@+id/upSpeed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:editable="true"
+                android:ems="7"
+                android:gravity="left"
+                android:hint="Up speed"
+                android:inputType="numberSigned"
+                android:textSize="22dp"
+                android:textStyle="italic" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.1"
-            android:ems="10"
-            android:hint="Y="
-            android:layout_gravity="center"
-            android:inputType="numberSigned" />
-    </LinearLayout>
-    <LinearLayout
-        android:layout_marginTop="30dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Enter mqtt ip address:"
-        android:layout_weight="0.1"
-        android:textSize="20sp" />
+            android:layout_marginTop="15dp"
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/editIpAddress"
-            android:layout_width="185dp"
+            <TextView
+                android:id="@+id/deviceId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="0.1"
+                android:gravity="left"
+                android:text="device"
+                android:textColor="#000000"
+                android:textSize="15dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="0.1"
+                android:gravity="left"
+                android:text="Location coordinates:"
+                android:textColor="#000000"
+                android:textSize="27dp" />
+
+            <TextView
+                android:id="@+id/X"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:ems="5"
+                android:gravity="left"
+                android:hint="X"
+                android:inputType="numberSigned"
+                android:textSize="30dp"
+                android:textStyle="italic" />
+
+            <TextView
+                android:id="@+id/Y"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:ems="5"
+                android:gravity="left"
+                android:hint="Y"
+                android:inputType="numberSigned"
+                android:textSize="30dp"
+                android:textStyle="italic" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="100"
-            android:editable="true">
+            android:layout_gravity="left"
+            android:layout_marginTop="35dp">
 
-            <requestFocus></requestFocus>
-        </EditText>
-    </LinearLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="1"
+                android:text="Server IP address:"
+                android:textColor="#000000"
+                android:textSize="27dp" />
 
-    <LinearLayout
-        android:layout_width="400dp"
-        android:layout_height="wrap_content"
-        android:gravity="center">
-    <Button
-        android:id="@+id/btnLocation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Connect"></Button>
-    </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/layButtonH"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_gravity="center">
+        </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_marginBottom="20dp">
+
+            <EditText
+                android:id="@+id/editIpAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_weight="1"
+                android:hint="255.255.255.255"
+                android:textSize="30dp">
+
+                <requestFocus></requestFocus>
+            </EditText>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_marginTop="35dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="1"
+                android:text="Speed test IP address:"
+                android:textColor="#000000"
+                android:textSize="27dp" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_marginBottom="20dp">
+
+            <EditText
+                android:id="@+id/speedTestIpAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_weight="1"
+                android:hint="255.255.255.255"
+                android:textSize="30dp">
+
+                <requestFocus></requestFocus>
+            </EditText>
+
+        </LinearLayout>
         <Switch
-            android:id="@+id/pushContinuously"
+            android:id="@+id/checkboxSpeedTest"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="20dp"
-            android:text="Push continuously   " />
-
-    </LinearLayout>
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_gravity="center">
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Enter timeout value"
-            android:gravity="center"
-            android:textSize="20sp" />
-        <EditText
-            android:id="@+id/timeout"
-            android:layout_width="185dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="100"
-            android:editable="true">
-
-            <requestFocus></requestFocus>
-        </EditText>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_marginTop="25dp"
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/resetTime"
+            android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
+            android:layout_weight="1"
+            android:gravity="left"
+            android:text="Test speed"
+            android:textSize="27dp" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_marginTop="25dp"
+            android:background="@android:color/darker_gray" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp">
+
+            <TextView
+                android:layout_width="350dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="1"
+                android:text="Send message once "
+                android:textColor="#000000"
+                android:textSize="27dp" />
+
+            <Button
+                android:id="@+id/pushManually"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="20dp"
+                android:text="Push once"
+                android:textSize="17dp"></Button>
+
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Reset timeout"></Button>
-        <Button
-            android:id="@+id/pushManually"
-            android:layout_width="wrap_content"
+            android:layout_gravity="left"
+            android:layout_marginTop="40dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:gravity="center"
+                android:text="Time-out value:"
+                android:textColor="#000000"
+                android:textSize="27dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Push manually"></Button>
+            android:layout_gravity="right"
+            android:layout_marginTop="5dp">
+
+            <EditText
+                android:id="@+id/timeout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="1"
+                android:textSize="30dp"></EditText>
+
+            <Button
+                android:id="@+id/resetTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="20dp"
+                android:text="Reset timeout"
+                android:textSize="17dp"></Button>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="20dp">
+
+            <Switch
+                android:id="@+id/pushContinuously"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:text="Send messages continuously   "
+                android:textSize="27dp" />
+
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</ScrollView>
